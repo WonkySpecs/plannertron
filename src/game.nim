@@ -1,13 +1,20 @@
-import ddnimlib / [drawing, linear]
-import types, assets, puzzle
+import sdl2
+import ddnimlib / [drawing, utils]
+import types, puzzle
 
-proc newGame*(sw, sh: int): Game =
+proc newGame*(): Game =
   new result
-  result.puzzle = newPuzzle(sw, sh)
+  result.puzzle = newPuzzle()
   result.quitting = false
   result.planning = true
 
-proc draw*(view: View, game: Game) =
+proc render_layer*(view: View, game: Game, layerIdx: int, dest: Rect) =
+  view.draw(
+    game.puzzle,
+    game.selectedLayerIdx,
+    dest)
+
+proc draw*(view: View, game: Game, dest: Rect) =
   view.start()
-  view.draw(game.puzzle, game.selectedLayerIdx)
+  view.render_layer(game, game.selectedLayerIdx, dest)
   view.finish()

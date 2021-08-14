@@ -42,3 +42,19 @@ type
     planning*: bool
     robot*: Robot
     quitting*: bool
+
+func rot_right*(facing: Facing): Facing =
+  case facing:
+    of North: East
+    of East: South
+    of South: West
+    of West: North
+
+func rot_left*(facing: Facing): Facing =
+  case facing:
+    of North: West
+    of West: South
+    of South: East
+    of East: North
+
+func num_layers*(game: Game): int = game.puzzle.layers.len

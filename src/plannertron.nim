@@ -1,5 +1,5 @@
 import sdl2, sdl2 / [image, ttf]
-import ddnimlib / [init, drawing]
+import ddnimlib / [init, drawing, utils]
 import assets, ui, game
 
 type
@@ -29,7 +29,7 @@ proc main =
   var
     lastFrame = getTicks().int
     view = initView(renderer, vw, vh)
-    game = newGame(vw, vh)
+    game = newGame()
     ui = newUI(vw, vh)
 
   while not game.quitting:
@@ -41,12 +41,16 @@ proc main =
     ui.processInputs(game)
     #game.process(view.cam, delta.float)
     #if game.quitting: break
-    view.draw(game)
-    view.renderer.draw(ui)
+    let
+      h_pad = 40
+      frac = 2 / 3
+      w = (vw.float  * frac).int - h_pad * 2
+      main_dest = r(h_pad, ((vh / 2) - (w / 2)).int, w, w)
+    view.draw(game, main_dest)
+    view.draw(ui, game)
     view.renderer.present()
 
-    if fpsCap > 0:
-      if delta < frameTimeMinMS:
+    if fpsCap > 0 and delta < frameTimeMinMS:
        delay((frameTimeMinMS - delta).uint32)
 
 when isMainModule:

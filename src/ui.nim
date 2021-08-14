@@ -1,7 +1,7 @@
 import strformat
 import sdl2
-import ddnimlib / [fpstimer, ui, linear]
-import types
+import ddnimlib / [fpstimer, ui, linear, utils, drawing]
+import types, game
 
 type
   UI* = ref object
@@ -32,8 +32,25 @@ proc processInputs*(ui: UI, game: Game) =
         else: discard
     else: discard
 
-proc draw*(renderer: RendererPtr, ui: UI) =
-  ui.ctx.start(renderer)
+proc draw*(view: View, ui: UI, game: Game) =
+  ui.ctx.start(view.renderer)
+
+  const
+    pad = 5
+    frac = 1 / 3
+
+  let
+    tile_height = ((ui.sh - pad) / game.num_layers()).int
+    container_width = (ui.sw.float * frac).int
+    container_left = ui.sw - container_width + pad
+    tile_width = container_width - pad * 2
+    tile_size = min(tile_height, tile_width)
+    left = container_left + (container_width / 2 - tile_size / 2).int
+
+  for i in 1..game.num_layers():
+    let dest = r(left, (i - 1) * (tile_size + pad) + pad, tile_size, tile_size)
+    view.render_layer(game, i, dest)
+
   ui.timer.tick()
   discard ui.ctx.doLabel(text= fmt"{ui.timer.fps():.2f} fps",
                          fg=color(255, 0, 0, 255),
