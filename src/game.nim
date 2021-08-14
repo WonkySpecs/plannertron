@@ -1,18 +1,40 @@
+import options
 import sdl2
-import ddnimlib / [drawing, utils]
-import types, puzzle
+import ddnimlib / [drawing, utils, linear]
+import types, puzzle, consts
 
-proc newGame*(): Game =
+proc new_game*(renderer: RendererPtr): Game =
   new result
   result.puzzle = newPuzzle()
   result.quitting = false
   result.planning = true
+  for n in min_layers..max_layers:
+    result.render_targets[n] = renderer.createTexture(
+      SDL_PIXELFORMAT_RGBA8888,
+      SDL_TEXTUREACCESS_TARGET,
+      (n * 32).cint, (n * 32).cint)
 
 proc render_layer*(view: View, game: Game, layerIdx: int, dest: Rect) =
+  let
+    prev_render_ptr = view.renderer.getRenderTarget()
+    layer = game.puzzle.layers[game.selectedLayerIdx]
+    size = layer.size.x.int
+    temp_render_ptr = game.render_targets[size]
+
+  view.renderer.setRenderTarget(temp_render_ptr)
+  view.renderer.setDrawColor(r=0, g=0, b=0)
+  view.renderer.clear()
   view.draw(
     game.puzzle,
     game.selectedLayerIdx,
-    dest)
+    r(0, 0, size * 32, size * 32))
+  view.renderer.setRenderTarget(prev_render_ptr)
+  var tr = texRegion(temp_render_ptr, none(Rect))
+  view.renderAbs(
+    tr,
+    dest.pos,
+    dest.size,
+    layer.facing.as_rot())
 
 proc draw*(view: View, game: Game, dest: Rect) =
   view.start()

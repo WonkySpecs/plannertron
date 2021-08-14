@@ -1,5 +1,7 @@
+from sdl2 import TexturePtr
 import options
 import ddnimlib / [drawing, linear]
+import consts
 
 type
   Asset* = enum
@@ -42,6 +44,7 @@ type
     planning*: bool
     robot*: Robot
     quitting*: bool
+    render_targets*: array[min_layers..max_layers, TexturePtr]
 
 func rot_right*(facing: Facing): Facing =
   case facing:
@@ -56,5 +59,12 @@ func rot_left*(facing: Facing): Facing =
     of West: South
     of South: East
     of East: North
+
+func as_rot*(facing: Facing): float =
+  case facing:
+    of North: 270
+    of East: 0
+    of South: 90
+    of West: 180
 
 func num_layers*(game: Game): int = game.puzzle.layers.len

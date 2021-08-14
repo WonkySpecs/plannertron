@@ -29,7 +29,7 @@ proc main =
   var
     lastFrame = getTicks().int
     view = initView(renderer, vw, vh)
-    game = newGame()
+    game = new_game(renderer)
     ui = newUI(vw, vh)
 
   while not game.quitting:
@@ -42,7 +42,7 @@ proc main =
     #game.process(view.cam, delta.float)
     #if game.quitting: break
     let
-      h_pad = 40
+      h_pad = 30
       frac = 2 / 3
       w = (vw.float  * frac).int - h_pad * 2
       main_dest = r(h_pad, ((vh / 2) - (w / 2)).int, w, w)
