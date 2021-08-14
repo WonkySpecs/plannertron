@@ -43,7 +43,7 @@ proc main =
     #if game.quitting: break
     let
       h_pad = 30
-      frac = 2 / 3
+      frac = 3 / 4
       w = (vw.float  * frac).int - h_pad * 2
       main_dest = r(h_pad, ((vh / 2) - (w / 2)).int, w, w)
     view.draw(game, main_dest)

@@ -42,3 +42,8 @@ proc draw*(view: View, game: Game, dest: Rect) =
 
 proc rotate_left*(game: Game) = game.active_layer().rot_left()
 proc rotate_right*(game: Game) = game.active_layer().rot_right()
+
+proc move_up_layer*(game: Game) =
+  if game.selectedLayerIdx > 0: game.selectedLayerIdx -= 1
+proc move_down_layer*(game: Game) =
+  if game.selectedLayerIdx < game.num_layers() - 1: game.selectedLayerIdx += 1
