@@ -17,8 +17,7 @@ proc new_game*(renderer: RendererPtr): Game =
 proc render_layer*(view: View, game: Game, layerIdx: int, dest: Rect) =
   let
     prev_render_ptr = view.renderer.getRenderTarget()
-    layer = game.puzzle.layers[game.selectedLayerIdx]
-    size = layer.size.x.int
+    size = game.active_layer().size.x.int
     temp_render_ptr = game.render_targets[size]
 
   view.renderer.setRenderTarget(temp_render_ptr)
@@ -34,9 +33,12 @@ proc render_layer*(view: View, game: Game, layerIdx: int, dest: Rect) =
     tr,
     dest.pos,
     dest.size,
-    layer.facing.as_rot())
+    game.active_layer().facing.as_rot())
 
 proc draw*(view: View, game: Game, dest: Rect) =
   view.start()
   view.render_layer(game, game.selectedLayerIdx, dest)
   view.finish()
+
+proc rotate_left*(game: Game) = game.active_layer().rot_left()
+proc rotate_right*(game: Game) = game.active_layer().rot_right()

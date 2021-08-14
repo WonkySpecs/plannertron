@@ -24,7 +24,9 @@ proc processInputs*(ui: UI, game: Game) =
     of QuitEvent: game.quitting = true
     of KeyDown:
       case ev.key.keysym.scancode:
-        of SDL_SCANCODE_Q: game.quitting = true
+        of SDL_SCANCODE_ESCAPE: game.quitting = true
+        of SDL_SCANCODE_Q: game.rotate_left()
+        of SDL_SCANCODE_E: game.rotate_right()
         else: discard
     of MouseButtonDown:
       case ev.button.button:
