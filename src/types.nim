@@ -15,16 +15,16 @@ type
     facing: Facing
     tex: TextureRegion
 
-  TileObjectKind = enum
+  TileObjectKind* = enum
     Arrow, Elevator
 
   TileObject* = object 
-    case kind: TileObjectKind
+    case kind*: TileObjectKind
     of Arrow:
       # Facing is relative to the layer
-      direction: Facing
+      direction*: Facing
     of Elevator:
-      goingDown: bool
+      goingDown*: bool
 
   Tile* = object
     bg*: TextureRegion
