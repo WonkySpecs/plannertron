@@ -9,29 +9,34 @@ func tile_content_asset*(obj: TileObject): Asset =
     of Elevator:
       if obj.goingDown: ElevatorDownSprite else: ElevatorUpSprite
 
+const test_size = 5
+
 proc new_puzzle*(): Puzzle =
   new result
-  var tiles = newSeq[Tile]()
-  for i in 1..9:
-    let content = if i != 5: none(TileObject) else: some(
+  var tiles1 = newSeq[Tile]()
+  var tiles2 = newSeq[Tile]()
+  for i in 1..test_size*test_size:
+    let content = if i != (test_size * test_size / 2).int: none(TileObject) else: some(
       TileObject(kind: Arrow, direction: South))
-    tiles.add Tile(
+    tiles1.add Tile(
       bg: textureRegions[TileBg],
       content: content)
+    tiles2.add Tile(
+      bg: textureRegions[TileBg],
+      content: some(TileObject(kind: Elevator, goingDown: true)))
 
   result.layers = @[
     Layer(
-      size: vec(3, 3),
-      tiles: tiles,
+      size: vec(test_size, test_size),
+      tiles: tiles1,
       facing: East),
     Layer(
-      size: vec(3, 3),
-      tiles: tiles,
+      size: vec(test_size, test_size),
+      tiles: tiles2,
       facing: North)]
 
-proc draw*(view: View, puzzle: Puzzle, layerIdx: int, dest: Rect) =
+proc draw*(view: View, layer: Layer, dest: Rect) =
   let
-    layer = puzzle.layers[layerIdx]
     layer_w = layer.size.x.int
     layer_h = layer.size.y.int
     dest_w = dest.w.int

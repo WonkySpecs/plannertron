@@ -49,8 +49,8 @@ proc draw*(view: View, ui: UI, game: Game) =
     tile_size = min(tile_height, tile_width)
     left = container_left + (container_width / 2 - tile_size / 2).int
 
-  for i in 1..game.num_layers():
-    let dest = r(left, (i - 1) * (tile_size + pad) + pad, tile_size, tile_size)
+  for i in 0..<game.num_layers():
+    let dest = r(left, i * (tile_size + pad) + pad, tile_size, tile_size)
     view.render_layer(game, i, dest)
 
   ui.timer.tick()
