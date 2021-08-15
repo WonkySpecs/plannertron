@@ -10,6 +10,7 @@ proc main =
     fpsCap = -1
     frameTimeMinMS = (1000 / fpsCap).int
     fs = false
+    expectedFrameMS = 1000 / 60
 
   initSdl()
 
@@ -39,8 +40,7 @@ proc main =
     lastFrame = time
 
     ui.processInputs(game)
-    #game.process(view.cam, delta.float)
-    #if game.quitting: break
+    game.tick(delta.float / expectedFrameMS)
     let
       h_pad = 30
       frac = 3 / 4

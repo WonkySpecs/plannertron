@@ -30,6 +30,11 @@ type
     bg*: TextureRegion
     content*: Option[TileObject]
 
+  LayerTransitions = object
+    rot*: float
+    target_layer_idx*: int
+    progress*: float
+
   Layer* = ref object
     size*: Vec[2]
     tiles*: seq[Tile]
@@ -45,6 +50,7 @@ type
     robot*: Robot
     quitting*: bool
     render_targets*: array[min_layers..max_layers, TexturePtr]
+    transitions*: LayerTransitions
 
 func rot_right*(facing: Facing): Facing =
   case facing:
@@ -69,5 +75,6 @@ func as_rot*(facing: Facing): float =
 
 func num_layers*(game: Game): int = game.puzzle.layers.len
 func active_layer*(game: Game): Layer = game.puzzle.layers[game.selectedLayerIdx]
+
 proc rot_left*(layer: Layer) = layer.facing = layer.facing.rot_left()
 proc rot_right*(layer: Layer) = layer.facing = layer.facing.rot_right()
