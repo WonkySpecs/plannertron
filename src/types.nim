@@ -78,3 +78,6 @@ func active_layer*(game: Game): Layer = game.puzzle.layers[game.selectedLayerIdx
 
 proc rot_left*(layer: Layer) = layer.facing = layer.facing.rot_left()
 proc rot_right*(layer: Layer) = layer.facing = layer.facing.rot_right()
+
+func layer_change_dir*(game: Game): int =
+  game.transitions.target_layer_idx - game.selectedLayerIdx

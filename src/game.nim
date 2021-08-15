@@ -9,11 +9,12 @@ proc new_game*(renderer: RendererPtr): Game =
   result.quitting = false
   result.planning = true
   for n in min_layers..max_layers:
-    result.render_targets[n] = renderer.createTexture(
+    let tex = renderer.createTexture(
       SDL_PIXELFORMAT_RGBA8888,
       SDL_TEXTUREACCESS_TARGET,
       (n * 32).cint, (n * 32).cint)
-
+    tex.setTextureBlendMode(BLENDMODE_BLEND)
+    result.render_targets[n] = tex
 proc tick*(game: Game, delta: float) =
   let drot = delta * abs(game.transitions.rot) / 4.5
   if game.transitions.rot > drot:
@@ -23,7 +24,19 @@ proc tick*(game: Game, delta: float) =
   else:
     game.transitions.rot = 0
 
-proc render_layer*(view: View, game: Game, layerIdx: int, dest: Rect, rot = 0.0) =
+  if game.layer_change_dir() != 0:
+    game.transitions.progress += delta / 10
+    if game.transitions.progress >= 1:
+      game.selectedLayerIdx = game.transitions.target_layer_idx
+      game.transitions.progress = 0
+
+proc render_layer*(
+  view: View,
+  game: Game,
+  layerIdx: int,
+  dest: Rect,
+  rot = 0.0,
+  alpha = 255) =
   let
     prev_render_ptr = view.renderer.getRenderTarget()
     layer = game.puzzle.layers[layerIdx]
@@ -37,16 +50,31 @@ proc render_layer*(view: View, game: Game, layerIdx: int, dest: Rect, rot = 0.0)
     layer,
     r(0, 0, size * 32, size * 32))
   view.renderer.setRenderTarget(prev_render_ptr)
+  temp_render_ptr.setTextureAlphaMod(alpha.uint8)
   var tr = texRegion(temp_render_ptr, none(Rect))
   view.renderAbs(
     tr,
     dest.pos,
     dest.size,
     layer.facing.as_rot() + rot)
+  temp_render_ptr.setTextureAlphaMod(255)
 
 proc draw*(view: View, game: Game, dest: Rect) =
   view.start()
-  view.render_layer(game, game.selectedLayerIdx, dest, game.transitions.rot)
+  if game.layer_change_dir() != 0:
+    let
+      cur_prog = 1 - game.transitions.progress
+      cur_layer_a = (255 * cur_prog).int
+      next_layer_a = (255 * game.transitions.progress).int
+
+      cur_shift = vec(0, -1 * game.layer_change_dir().float * game.transitions.progress) * 30
+      next_shift = vec(0, game.layer_change_dir().float * cur_prog) * 30
+
+    view.render_layer(game, game.transitions.target_layer_idx, dest + next_shift, alpha=next_layer_a)
+    view.render_layer(game, game.selectedLayerIdx, dest + cur_shift, alpha=cur_layer_a)
+
+  else:
+    view.render_layer(game, game.selectedLayerIdx, dest, game.transitions.rot)
   view.finish()
 
 proc rotate_left*(game: Game) =
@@ -61,6 +89,7 @@ proc rotate_right*(game: Game) =
   game.active_layer().rot_right()
 
 proc move_up_layer*(game: Game) =
-  if game.selectedLayerIdx > 0: game.selectedLayerIdx -= 1
+  if game.transitions.target_layer_idx > 0: game.transitions.target_layer_idx -= 1
 proc move_down_layer*(game: Game) =
-  if game.selectedLayerIdx < game.num_layers() - 1: game.selectedLayerIdx += 1
+  if game.transitions.target_layer_idx < game.num_layers() - 1:
+    game.transitions.target_layer_idx += 1
