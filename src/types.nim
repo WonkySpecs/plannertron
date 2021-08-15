@@ -10,13 +10,14 @@ type
   Facing* = enum North, East, South, West
 
   Robot* = object
-    pos: Vec[2]
+    pos*: Vec[2]
     # Absolute facing
-    facing: Facing
-    tex: TextureRegion
+    facing*: Facing
+    tr*: TextureRegion
+    progress*: float
 
   TileObjectKind* = enum
-    Arrow, Elevator
+    Arrow, Elevator, Test
 
   TileObject* = object 
     case kind*: TileObjectKind
@@ -24,7 +25,8 @@ type
       # Facing is relative to the layer
       direction*: Facing
     of Elevator:
-      goingDown*: bool
+      going_down*: bool
+    else: discard
 
   Tile* = object
     bg*: TextureRegion
@@ -46,8 +48,9 @@ type
   Game* = ref object
     selected_layer_idx*: int
     puzzle*: Puzzle
-    planning*: bool
+    running_puzzle*: Puzzle
     robot*: Robot
+    planning*: bool
     quitting*: bool
     render_targets*: array[min_layers..max_layers, TexturePtr]
     transitions*: LayerTransitions

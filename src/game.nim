@@ -1,7 +1,7 @@
 import options
 import sdl2
 import ddnimlib / [drawing, utils, linear]
-import types, puzzle, consts
+import types, puzzle, consts, assets, tile_objects
 
 proc new_game*(renderer: RendererPtr): Game =
   new result
@@ -15,8 +15,18 @@ proc new_game*(renderer: RendererPtr): Game =
       (n * 32).cint, (n * 32).cint)
     tex.setTextureBlendMode(BLENDMODE_BLEND)
     result.render_targets[n] = tex
+  result.robot = Robot(
+    pos: vec(0, 0),
+    facing: South,
+    tr: texture_regions[RobotSprite])
 
-proc tick*(game: Game, delta: float) =
+proc go*(game: Game) =
+  game.planning = false
+  game.running_puzzle = deepCopy(game.puzzle)
+  game.running_puzzle.layers[0].facing = South
+  on_arrival_procs[Elevator](game, TileObject(kind: Elevator, going_down: true))
+
+proc planning_tick(game: Game, delta: float) =
   let drot = delta * abs(game.transitions.rot) / 4.5
   if game.transitions.rot > drot:
     game.transitions.rot -= drot
@@ -30,6 +40,19 @@ proc tick*(game: Game, delta: float) =
     if game.transitions.progress >= 1:
       game.selectedLayerIdx = game.transitions.target_layer_idx
       game.transitions.progress = 0
+
+var t = 0.0
+proc run_tick(game: Game, delta: float) =
+  t += delta
+  if t > 50:
+    game.planning = true
+    t = 0
+
+proc tick*(game: Game, delta: float) =
+  if game.planning:
+    game.planning_tick(delta)
+  else:
+    game.run_tick(delta)
 
 proc render_layer*(
   view: View,
@@ -60,7 +83,7 @@ proc render_layer*(
     layer.facing.as_rot() + rot)
   temp_render_ptr.setTextureAlphaMod(255)
 
-proc draw*(view: View, game: Game, dest: Rect) =
+proc planning_draw(view: View, game: Game, dest: Rect) =
   view.start()
   if game.layer_change_dir() != 0:
     let
@@ -78,19 +101,37 @@ proc draw*(view: View, game: Game, dest: Rect) =
     view.render_layer(game, game.selectedLayerIdx, dest, game.transitions.rot)
   view.finish()
 
+proc running_draw(view: View, game: Game, dest: Rect) =
+  view.start()
+  view.render_layer(game, game.selectedLayerIdx, dest)
+  view.renderAbs(game.robot.tr, vec(100, 100), vec(10, 10))
+  view.finish()
+
+proc draw*(view: View, game: Game, dest: Rect) =
+  if game.planning:
+    view.planning_draw(game, dest)
+  else:
+    view.running_draw(game, dest)
+
 proc rotate_left*(game: Game) =
+  if not game.planning: return
   game.transitions.rot += 90
   while game.transitions.rot > 360:
     game.transitions.rot -= 360
   game.active_layer().rot_left()
+
 proc rotate_right*(game: Game) =
+  if not game.planning: return
   game.transitions.rot -= 90
   while game.transitions.rot < -360:
     game.transitions.rot += 360
   game.active_layer().rot_right()
 
 proc move_up_layer*(game: Game) =
+  if not game.planning: return
   if game.transitions.target_layer_idx > 0: game.transitions.target_layer_idx -= 1
+
 proc move_down_layer*(game: Game) =
+  if not game.planning: return
   if game.transitions.target_layer_idx < game.num_layers() - 1:
     game.transitions.target_layer_idx += 1

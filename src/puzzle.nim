@@ -8,7 +8,7 @@ func tile_content_asset*(obj: TileObject): Asset =
     of Arrow: ArrowSprite
     of Elevator:
       if obj.goingDown: ElevatorDownSprite else: ElevatorUpSprite
-
+    else: ArrowSprite
 const test_size = 5
 
 proc new_puzzle*(): Puzzle =
