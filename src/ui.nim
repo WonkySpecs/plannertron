@@ -1,4 +1,4 @@
-import strformat
+import strformat, options
 import sdl2
 import ddnimlib / [fpstimer, ui, linear, utils, drawing]
 import types, game
@@ -32,9 +32,13 @@ proc process_inputs*(ui: UI, game: Game) =
         else: discard
     of MouseButtonDown:
       case ev.button.button:
-        of BUTTON_LEFT: echo ("Clickety clacked")
+        of BUTTON_LEFT: ui.ctx.pressMouse(vec(ev.button.x, ev.button.y))
         else: discard
+    of MouseButtonUp:
+      if ev.button.button == BUTTON_LEFT:
+        ui.ctx.releaseMouse(vec(ev.button.x, ev.button.y))
     else: discard
+    ui.ctx.setMousePos(getMousePos())
 
 proc draw*(view: View, ui: UI, game: Game) =
   ui.ctx.start(view.renderer)
@@ -63,6 +67,17 @@ proc draw*(view: View, ui: UI, game: Game) =
       view.renderer.fillRect(highlight)
     let dest = r(left,tile_top, tile_size, tile_size)
     view.render_layer(game, i, dest)
+
+  case ui.ctx.doButtonLabel(
+    "Go",
+    size=42,
+    pos=vec(ui.sw - 120, ui.sh - 70),
+    fg=c(240, 240, 230),
+    bg=some(c(70, 210, 50)),
+    hover_bg=some(c(25, 190, 30)),
+    active_bg=some(c(10, 150, 0)))
+    of Clicked: echo "Clicked"
+    else: discard
 
   ui.timer.tick()
   discard ui.ctx.doLabel(text= fmt"{ui.timer.fps():.2f} fps",
