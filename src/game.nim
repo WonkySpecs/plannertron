@@ -15,6 +15,7 @@ proc new_game*(renderer: RendererPtr): Game =
       (n * 32).cint, (n * 32).cint)
     tex.setTextureBlendMode(BLENDMODE_BLEND)
     result.render_targets[n] = tex
+
 proc tick*(game: Game, delta: float) =
   let drot = delta * abs(game.transitions.rot) / 4.5
   if game.transitions.rot > drot:

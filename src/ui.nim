@@ -10,14 +10,14 @@ type
     #tooltip: Option[string]
     timer: FPSTimer
 
-proc newUI*(sw, sh: int): UI =
+proc new_ui*(sw, sh: int): UI =
   new result
   result.sw = sw
   result.sh = sh
   result.ctx = newUIContext("assets/framd.ttf")
 
-proc processInputs*(ui: UI, game: Game) =
-  ui.ctx.startInput()
+proc process_inputs*(ui: UI, game: Game) =
+  ui.ctx.start_input()
   var ev = defaultEvent
   while pollEvent(ev):
     case ev.kind:
@@ -56,7 +56,7 @@ proc draw*(view: View, ui: UI, game: Game) =
 
   for i in 0..<game.num_layers():
     let tile_top = top + i * (tile_size + pad) + pad
-    if i == game.selectedLayerIdx:
+    if i == game.selected_layer_idx:
       var highlight = r(
         left - 2, tile_top - 2, tile_size + 4, tile_size + 4)
       view.renderer.setDrawColor(Color((150.uint8, 150.uint8, 150.uint8, 255.uint8)))

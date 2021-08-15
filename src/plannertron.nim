@@ -7,10 +7,10 @@ type
 
 proc main =
   const
-    fpsCap = -1
-    frameTimeMinMS = (1000 / fpsCap).int
+    fps_cap = -1
+    frame_time_min_ms = (1000 / fps_cap).int
     fs = false
-    expectedFrameMS = 1000 / 60
+    expected_frame_ms = 1000 / 60
 
   initSdl()
 
@@ -26,21 +26,21 @@ proc main =
   sdlFailIf renderer.isNil: "Renderer could not be created"
   defer: renderer.destroy()
 
-  loadTextures(renderer)
+  load_textures(renderer)
   var
-    lastFrame = getTicks().int
-    view = initView(renderer, vw, vh)
+    last_frame = getTicks().int
+    view = init_view(renderer, vw, vh)
     game = new_game(renderer)
-    ui = newUI(vw, vh)
+    ui = new_ui(vw, vh)
 
   while not game.quitting:
     let
       time = getTicks().int
-      delta = (time - lastFrame)
-    lastFrame = time
+      delta = (time - last_frame)
+    last_frame = time
 
-    ui.processInputs(game)
-    game.tick(delta.float / expectedFrameMS)
+    ui.process_inputs(game)
+    game.tick(delta.float / expected_frame_ms)
     let
       h_pad = 30
       frac = 3 / 4
@@ -50,8 +50,8 @@ proc main =
     view.draw(ui, game)
     view.renderer.present()
 
-    if fpsCap > 0 and delta < frameTimeMinMS:
-       delay((frameTimeMinMS - delta).uint32)
+    if fps_cap > 0 and delta < frame_time_min_ms:
+       delay((frame_time_min_ms - delta).uint32)
 
 when isMainModule:
   main()

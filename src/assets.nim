@@ -5,17 +5,17 @@ import ddnimlib / [drawing, utils]
 import types
 
 const
-  fileExt = ".png"
-  rootFolder = "assets/"
+  file_ext = ".png"
+  root_folder = "assets/"
 
 var
-  textureStore: array[Asset, TexturePtr]
-  textureRegions*: array[Asset, TextureRegion]
+  texture_store: array[Asset, TexturePtr]
+  texture_regions*: array[Asset, TextureRegion]
 
 func cell(x, y, size = 32): Rect {.inline.} =
   r(x * size, y * size, size, size)
 
-const spriteSheets = {
+const sprite_sheets = {
   ArrowSprite: (cell(0, 0), "placeholders"),
   RobotSprite: (cell(1, 0), "placeholders"),
   TileBg: (cell(2, 0), "placeholders"),
@@ -23,16 +23,16 @@ const spriteSheets = {
   ElevatorDownSprite: (cell(4, 0), "placeholders"),
 }.toTable
 
-proc loadTextures*(renderer: RendererPtr) =
+proc load_textures*(renderer: RendererPtr) =
   let loaded = newTable[string, TexturePtr]()
-  for (k, v) in spriteSheets.pairs:
+  for (k, v) in sprite_sheets.pairs:
     if not loaded.hasKey(v[1]):
       let
-        f = rootFolder & v[1] & fileExt
+        f = root_folder & v[1] & file_ext
         tex = renderer.loadTexture(f)
       assert tex != nil, "Failed to load texture: " & f
       loaded[v[1]] = tex
 
     let tex = loaded[v[1]]
-    textureStore[k] = tex
-    textureRegions[k] = texRegion(tex, some(v[0]))
+    texture_store[k] = tex
+    texture_regions[k] = texRegion(tex, some(v[0]))

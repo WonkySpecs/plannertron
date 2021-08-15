@@ -44,7 +44,7 @@ type
     layers*: seq[Layer]
 
   Game* = ref object
-    selectedLayerIdx*: int
+    selected_layer_idx*: int
     puzzle*: Puzzle
     planning*: bool
     robot*: Robot
@@ -74,10 +74,10 @@ func as_rot*(facing: Facing): float =
     of West: 180
 
 func num_layers*(game: Game): int = game.puzzle.layers.len
-func active_layer*(game: Game): Layer = game.puzzle.layers[game.selectedLayerIdx]
+func active_layer*(game: Game): Layer = game.puzzle.layers[game.selected_layer_idx]
 
 proc rot_left*(layer: Layer) = layer.facing = layer.facing.rot_left()
 proc rot_right*(layer: Layer) = layer.facing = layer.facing.rot_right()
 
 func layer_change_dir*(game: Game): int =
-  game.transitions.target_layer_idx - game.selectedLayerIdx
+  game.transitions.target_layer_idx - game.selected_layer_idx
