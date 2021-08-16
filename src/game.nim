@@ -16,8 +16,6 @@ proc new_game*(renderer: RendererPtr): Game =
     tex.setTextureBlendMode(BLENDMODE_BLEND)
     result.render_targets[n] = tex
   result.robot = Robot(
-    pos: vec(0, 0),
-    facing: South,
     tr: texture_regions[RobotSprite])
 
 proc go*(game: Game) =
@@ -28,10 +26,7 @@ proc go*(game: Game) =
     North - game.active_layer().facing,
     game.active_layer().size.x.int)
   game.robot.facing = South
-  on_arrival_procs[Arrow](game, TileObject(kind: Arrow, direction: East))
-  echo game.robot.facing
-  echo game.robot.pos
-
+  game.robot.movement = (game.robot.facing - game.active_layer().facing).as_dir()
 
 proc planning_tick(game: Game, delta: float) =
   let drot = delta * abs(game.transitions.rot) / 4.5
@@ -49,17 +44,22 @@ proc planning_tick(game: Game, delta: float) =
       game.transitions.progress = 0
 
 var t = 0.0
-proc run_tick(game: Game, delta: float) =
+proc running_tick(game: Game, delta: float) =
   t += delta
   if t > 50:
     game.planning = true
     t = 0
+  game.robot.progress += delta / 20
+  if game.robot.progress > 1:
+    game.robot.progress -= 1
+    game.robot.pos += game.robot.movement
+    game.robot.movement = (game.robot.facing - game.active_layer().facing).as_dir()
 
 proc tick*(game: Game, delta: float) =
   if game.planning:
     game.planning_tick(delta)
   else:
-    game.run_tick(delta)
+    game.running_tick(delta)
 
 proc render_layer*(
   view: View,

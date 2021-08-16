@@ -68,6 +68,6 @@ proc draw*(view: View, layer: Layer, dest: Rect, robot = none(Robot)) =
     var r = robot.get()
     view.renderAbs(
       r.tr,
-      dest.pos + r.pos * dest_tile_size.x,
+      dest.pos + (r.pos + r.progress * r.movement) * dest_tile_size.x,
       dest_tile_size,
       (r.facing - layer.facing).as_rot)

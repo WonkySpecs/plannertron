@@ -11,8 +11,8 @@ type
 
   Robot* = object
     pos*: Vec[2]
-    # Absolute facing
-    facing*: Facing
+    movement*: Vec[2] # Cache next movement
+    facing*: Facing # Absolute facing
     tr*: TextureRegion
     progress*: float
 
@@ -87,6 +87,7 @@ func layer_change_dir*(game: Game): int =
 
 func `+`*(f1, f2: Facing): Facing = ((ord(f1) + ord(f2)) mod 4).Facing
 func `-`*(f1, f2: Facing): Facing = ((ord(f1) - ord(f2) + 4) mod 4).Facing
+
 func rotate*(v: Vec[2], facing: Facing, side_len: int): Vec[2] =
   let n = side_len - 1
   case facing:
@@ -94,3 +95,10 @@ func rotate*(v: Vec[2], facing: Facing, side_len: int): Vec[2] =
     of East: vec(n - v.y.int, v.x.int)
     of South: vec(n - v.x.int, n - v.y.int)
     of West: vec(v.y.int, n - v.x.int)
+
+func as_dir*(facing: Facing): Vec[2] =
+  case facing:
+    of North: vec(0, -1)
+    of East: vec(1, 0)
+    of South: vec(0, 1)
+    of West: vec(-1, 0)
