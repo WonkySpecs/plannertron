@@ -102,3 +102,6 @@ func as_dir*(facing: Facing): Vec[2] =
     of East: vec(1, 0)
     of South: vec(0, 1)
     of West: vec(-1, 0)
+
+func tile_at*(layer: Layer, pos: Vec[2]): Tile {.inline} =
+  layer.tiles[(pos.y * layer.size.x + pos.x).int]

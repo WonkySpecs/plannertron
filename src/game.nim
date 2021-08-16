@@ -46,13 +46,17 @@ proc planning_tick(game: Game, delta: float) =
 var t = 0.0
 proc running_tick(game: Game, delta: float) =
   t += delta
-  if t > 50:
+  if t > 80:
     game.planning = true
     t = 0
   game.robot.progress += delta / 20
   if game.robot.progress > 1:
     game.robot.progress -= 1
     game.robot.pos += game.robot.movement
+    let tile = game.active_layer().tile_at(game.robot.pos)
+    if tile.content.isSome:
+      let obj = tile.content.get()
+      on_arrival_procs[obj.kind](game, obj)
     game.robot.movement = (game.robot.facing - game.active_layer().facing).as_dir()
 
 proc tick*(game: Game, delta: float) =

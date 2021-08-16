@@ -16,14 +16,14 @@ proc new_puzzle*(): Puzzle =
   var tiles1 = newSeq[Tile]()
   var tiles2 = newSeq[Tile]()
   for i in 1..test_size*test_size:
-    let content = if i != (test_size * test_size / 2).int: none(TileObject) else: some(
-      TileObject(kind: Arrow, direction: South))
     tiles1.add Tile(
       bg: textureRegions[TileBg],
-      content: content)
+      content: none(TileObject))
     tiles2.add Tile(
       bg: textureRegions[TileBg],
       content: some(TileObject(kind: Elevator, goingDown: true)))
+  tiles1[test_size].content = some(TileObject(kind: Arrow, direction: East))
+  tiles1[test_size+1].content = some(TileObject(kind: Arrow, direction: South))
 
   result.layers = @[
     Layer(
@@ -57,12 +57,18 @@ proc draw*(view: View, layer: Layer, dest: Rect, robot = none(Robot)) =
     for i in 0..<layer_w:
       var tile = layer.tiles[j * layer_w + i]
       if tile.content.isNone: continue
+      let
+        obj = tile.content.get
+        rot = case obj.kind:
+          of Arrow: obj.direction.as_rot()
+          else: 0
       view.renderAbs(
-        textureRegions[tile_content_asset(tile.content.get)],
+        textureRegions[tile_content_asset(obj)],
         dest.pos + vec(
           i.float * dest_tile_size.x,
           j.float * dest_tile_size.y),
-        dest_tile_size)
+        dest_tile_size,
+        rot)
 
   if robot.isSome:
     var r = robot.get()
