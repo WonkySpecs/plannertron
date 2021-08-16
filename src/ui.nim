@@ -29,6 +29,7 @@ proc process_inputs*(ui: UI, game: Game) =
         of SDL_SCANCODE_E: game.rotate_right()
         of SDL_SCANCODE_W: game.move_up_layer()
         of SDL_SCANCODE_S: game.move_down_layer()
+        of SDL_SCANCODE_SPACE: game.go()
         else: discard
     of MouseButtonDown:
       case ev.button.button:
