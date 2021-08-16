@@ -13,4 +13,3 @@ bin           = @["plannertron"]
 requires "nim >= 1.4.8"
 requires "ddnimlib"
 requires "sdl2"
-

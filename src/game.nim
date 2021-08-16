@@ -23,8 +23,15 @@ proc new_game*(renderer: RendererPtr): Game =
 proc go*(game: Game) =
   game.planning = false
   game.running_puzzle = deepCopy(game.puzzle)
-  game.running_puzzle.layers[0].facing = South
-  on_arrival_procs[Elevator](game, TileObject(kind: Elevator, going_down: true))
+  game.selected_layer_idx = 0
+  game.robot.pos = vec(0, 0).rotate(
+    North - game.active_layer().facing,
+    game.active_layer().size.x.int)
+  game.robot.facing = South
+  on_arrival_procs[Arrow](game, TileObject(kind: Arrow, direction: East))
+  echo game.robot.facing
+  echo game.robot.pos
+
 
 proc planning_tick(game: Game, delta: float) =
   let drot = delta * abs(game.transitions.rot) / 4.5
@@ -38,7 +45,7 @@ proc planning_tick(game: Game, delta: float) =
   if game.layer_change_dir() != 0:
     game.transitions.progress += delta / 10
     if game.transitions.progress >= 1:
-      game.selectedLayerIdx = game.transitions.target_layer_idx
+      game.selected_layer_idx = game.transitions.target_layer_idx
       game.transitions.progress = 0
 
 var t = 0.0
@@ -60,7 +67,8 @@ proc render_layer*(
   layerIdx: int,
   dest: Rect,
   rot = 0.0,
-  alpha = 255) =
+  alpha = 255,
+  robot = none(Robot)) =
   let
     prev_render_ptr = view.renderer.getRenderTarget()
     layer = game.puzzle.layers[layerIdx]
@@ -72,7 +80,8 @@ proc render_layer*(
   view.renderer.clear()
   view.draw(
     layer,
-    r(0, 0, size * 32, size * 32))
+    r(0, 0, size * 32, size * 32),
+    robot)
   view.renderer.setRenderTarget(prev_render_ptr)
   temp_render_ptr.setTextureAlphaMod(alpha.uint8)
   var tr = texRegion(temp_render_ptr, none(Rect))
@@ -95,16 +104,15 @@ proc planning_draw(view: View, game: Game, dest: Rect) =
       next_shift = vec(0, game.layer_change_dir().float * cur_prog) * 30
 
     view.render_layer(game, game.transitions.target_layer_idx, dest + next_shift, alpha=next_layer_a)
-    view.render_layer(game, game.selectedLayerIdx, dest + cur_shift, alpha=cur_layer_a)
+    view.render_layer(game, game.selected_layer_idx, dest + cur_shift, alpha=cur_layer_a)
 
   else:
-    view.render_layer(game, game.selectedLayerIdx, dest, game.transitions.rot)
+    view.render_layer(game, game.selected_layer_idx, dest, game.transitions.rot)
   view.finish()
 
 proc running_draw(view: View, game: Game, dest: Rect) =
   view.start()
-  view.render_layer(game, game.selectedLayerIdx, dest)
-  view.renderAbs(game.robot.tr, vec(100, 100), vec(10, 10))
+  view.render_layer(game, game.selected_layer_idx, dest, robot = some(game.robot))
   view.finish()
 
 proc draw*(view: View, game: Game, dest: Rect) =

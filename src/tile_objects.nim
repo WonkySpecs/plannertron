@@ -1,6 +1,8 @@
 import macros
 import types
 
+type ObjProc = proc(game: Game, obj: TileObject)
+
 macro obj_proc(p_name, obj_type, body: untyped): untyped =
   let assert_cmd = quote do:
     assert obj.kind == `obj_type`
@@ -17,13 +19,11 @@ macro obj_proc(p_name, obj_type, body: untyped): untyped =
     body = newStmtList(assert_cmd, body))
 
 obj_proc(change_direction, Arrow):
-  game.robot.facing = obj.direction
+  game.robot.facing = obj.direction + game.active_layer().facing
 
 obj_proc(change_floor, Elevator):
-  if obj.going_down:
-    game.selected_layer_idx += 1
-  else:
-    game.selected_layer_idx -= 1
+  let change = if obj.going_down: 1 else: -1
+  game.selected_layer_idx += change
 
 proc nothing(game: Game, obj: TileObject) = discard
 

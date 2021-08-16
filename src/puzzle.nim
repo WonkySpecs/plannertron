@@ -1,5 +1,5 @@
-import sdl2
 import options, sugar
+import sdl2
 import ddnimlib / [drawing, linear, utils]
 import types, assets
 
@@ -29,13 +29,13 @@ proc new_puzzle*(): Puzzle =
     Layer(
       size: vec(test_size, test_size),
       tiles: tiles1,
-      facing: East),
+      facing: North),
     Layer(
       size: vec(test_size, test_size),
       tiles: tiles2,
       facing: North)]
 
-proc draw*(view: View, layer: Layer, dest: Rect) =
+proc draw*(view: View, layer: Layer, dest: Rect, robot = none(Robot)) =
   let
     layer_w = layer.size.x.int
     layer_h = layer.size.y.int
@@ -63,3 +63,11 @@ proc draw*(view: View, layer: Layer, dest: Rect) =
           i.float * dest_tile_size.x,
           j.float * dest_tile_size.y),
         dest_tile_size)
+
+  if robot.isSome:
+    var r = robot.get()
+    view.renderAbs(
+      r.tr,
+      dest.pos + r.pos * dest_tile_size.x,
+      dest_tile_size,
+      (r.facing - layer.facing).as_rot)

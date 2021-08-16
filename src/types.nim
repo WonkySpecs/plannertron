@@ -71,10 +71,10 @@ func rot_left*(facing: Facing): Facing =
 
 func as_rot*(facing: Facing): float =
   case facing:
-    of North: 270
-    of East: 0
-    of South: 90
-    of West: 180
+    of North: 0
+    of East: 90
+    of South: 180
+    of West: 270
 
 func num_layers*(game: Game): int = game.puzzle.layers.len
 func active_layer*(game: Game): Layer = game.puzzle.layers[game.selected_layer_idx]
@@ -84,3 +84,13 @@ proc rot_right*(layer: Layer) = layer.facing = layer.facing.rot_right()
 
 func layer_change_dir*(game: Game): int =
   game.transitions.target_layer_idx - game.selected_layer_idx
+
+func `+`*(f1, f2: Facing): Facing = ((ord(f1) + ord(f2)) mod 4).Facing
+func `-`*(f1, f2: Facing): Facing = ((ord(f1) - ord(f2) + 4) mod 4).Facing
+func rotate*(v: Vec[2], facing: Facing, side_len: int): Vec[2] =
+  let n = side_len - 1
+  case facing:
+    of North: v
+    of East: vec(n - v.y.int, v.x.int)
+    of South: vec(n - v.x.int, n - v.y.int)
+    of West: vec(v.y.int, n - v.x.int)
