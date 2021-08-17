@@ -67,11 +67,21 @@ proc draw*(view: View, ui: UI, game: Game) =
   const
     h_pad = 10
     v_pad = 80
-  discard ui.ctx.doReorderableIcons(
+  let reorder = ui.ctx.doReorderableIcons(
+    "layer-previews",
     vec(ui.sw * 3 / 4 + h_pad, v_pad),
     textures,
     fill = c(40, 40, 40),
     size = some(vec(ui.sw / 4 - 2 * h_pad, ui.sh - 2 * v_pad)))
+  if reorder.isSome:
+    let
+      a = reorder.get().old_pos
+      b = reorder.get().new_pos
+      old = game.puzzle.layers[a]
+    game.puzzle.layers.delete(a)
+    game.puzzle.layers.insert(old, b)
+    game.selected_layer_idx = b
+    game.transitions.target_layer_idx = b
 
   if game.planning and ui.ctx.doButtonLabel(
       "Go",
