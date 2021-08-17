@@ -1,7 +1,7 @@
 import strformat, options
 import sdl2
-import ddnimlib / [fpstimer, ui, linear, utils, drawing]
-import types, game
+import ddnimlib / [fpstimer, ui, linear, utils, drawing, colors]
+import types, game, consts
 
 type
   UI* = ref object
@@ -9,12 +9,20 @@ type
     sw*, sh*: int
     #tooltip: Option[string]
     timer: FPSTimer
+    render_targets: array[max_layers, TexturePtr]
 
-proc new_ui*(sw, sh: int): UI =
+proc new_ui*(sw, sh: int, renderer: RendererPtr): UI =
   new result
   result.sw = sw
   result.sh = sh
   result.ctx = newUIContext("assets/framd.ttf")
+  for n in 0..<max_layers:
+    let tex = renderer.createTexture(
+      SDL_PIXELFORMAT_RGBA8888,
+      SDL_TEXTUREACCESS_TARGET,
+      (96).cint, (96).cint)
+    tex.setTextureBlendMode(BLENDMODE_BLEND)
+    result.render_targets[n] = tex
 
 proc process_inputs*(ui: UI, game: Game) =
   ui.ctx.start_input()
@@ -44,30 +52,26 @@ proc process_inputs*(ui: UI, game: Game) =
 proc draw*(view: View, ui: UI, game: Game) =
   ui.ctx.start(view.renderer)
 
-  const
-    pad = 8
-    frac = 1 / 4
-
-  let
-    tile_height = ((ui.sh - pad) / game.num_layers()).int
-    container_width = (ui.sw.float * frac).int
-    container_height = ui.sh - pad * 2
-    container_left = ui.sw - container_width
-    tile_width = container_width - pad * 2
-    tile_size = min(tile_height, tile_width)
-    left = container_left + (container_width / 2 - tile_size / 2).int
-    total_height = (tile_size + pad) * game.num_layers()
-    top = (container_height / 2 - total_height / 2).int
-
+  let orig_render_target = view.renderer.getRenderTarget()
+  var textures = newSeq[TextureRegion]()
   for i in 0..<game.num_layers():
-    let tile_top = top + i * (tile_size + pad) + pad
-    if i == game.selected_layer_idx:
-      var highlight = r(
-        left - 2, tile_top - 2, tile_size + 4, tile_size + 4)
-      view.renderer.setDrawColor(Color((150.uint8, 150.uint8, 150.uint8, 255.uint8)))
-      view.renderer.fillRect(highlight)
-    let dest = r(left,tile_top, tile_size, tile_size)
+    let
+      new_render_target = ui.render_targets[i]
+      target_size = new_render_target.getSize()
+      dest = r(0, 0, target_size.x.int, target_size.y.int)
+    view.renderer.setRenderTarget(new_render_target)
     view.render_layer(game, i, dest)
+    textures.add(texRegion(new_render_target, none(Rect)))
+  view.renderer.setRenderTarget(orig_render_target)
+
+  const
+    h_pad = 10
+    v_pad = 80
+  discard ui.ctx.doReorderableIcons(
+    vec(ui.sw * 3 / 4 + h_pad, v_pad),
+    textures,
+    fill = c(40, 40, 40),
+    size = some(vec(ui.sw / 4 - 2 * h_pad, ui.sh - 2 * v_pad)))
 
   if game.planning and ui.ctx.doButtonLabel(
       "Go",

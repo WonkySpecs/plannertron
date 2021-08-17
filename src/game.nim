@@ -1,20 +1,18 @@
 import options
 import sdl2
 import ddnimlib / [drawing, utils, linear]
-import types, puzzle, consts, assets, tile_objects
+import types, puzzle, assets, tile_objects
 
 proc new_game*(renderer: RendererPtr): Game =
   new result
   result.puzzle = newPuzzle()
   result.quitting = false
   result.planning = true
-  for n in min_layers..max_layers:
-    let tex = renderer.createTexture(
+  result.layer_render_target = renderer.createTexture(
       SDL_PIXELFORMAT_RGBA8888,
       SDL_TEXTUREACCESS_TARGET,
-      (n * 32).cint, (n * 32).cint)
-    tex.setTextureBlendMode(BLENDMODE_BLEND)
-    result.render_targets[n] = tex
+      (144).cint, (144).cint)
+  result.layer_render_target.setTextureBlendMode(BLENDMODE_BLEND)
   result.robot = Robot(
     tr: texture_regions[RobotSprite])
 
@@ -77,7 +75,7 @@ proc render_layer*(
     prev_render_ptr = view.renderer.getRenderTarget()
     layer = game.puzzle.layers[layerIdx]
     size = layer.size.x.int
-    temp_render_ptr = game.render_targets[size]
+    temp_render_ptr = game.layer_render_target
 
   view.renderer.setRenderTarget(temp_render_ptr)
   view.renderer.setDrawColor(r=0, g=0, b=0)

@@ -31,7 +31,7 @@ proc main =
     last_frame = getTicks().int
     view = init_view(renderer, vw, vh)
     game = new_game(renderer)
-    ui = new_ui(vw, vh)
+    ui = new_ui(vw, vh, renderer)
 
   while not game.quitting:
     let
