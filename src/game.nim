@@ -47,13 +47,14 @@ proc planning_tick(game: Game, delta: float) =
 
 proc running_tick(game: Game, delta: float) =
   let old_prog = game.robot.progress
-  game.robot.progress += delta / 20
+  game.robot.progress += delta / 40
   if old_prog < 0.5 and game.robot.progress > 0.5:
     let
       next_tile = game.robot.pos + game.robot.movement
       layer_size = game.active_layer().size
 
-    if next_tile.x < 0 or next_tile.y < 0 or next_tile.x >= layer_size.x or next_tile.y >= layer_size.y:
+    if next_tile.x < 0 or next_tile.y < 0 or
+      next_tile.x >= layer_size.x or next_tile.y >= layer_size.y:
       game.failure("hit a wall")
 
   if game.robot.progress > 1:
@@ -145,11 +146,11 @@ proc rotate_right*(game: Game) =
     game.transitions.rot += 360
   game.active_layer().rot_right()
 
-proc move_up_layer*(game: Game) =
+proc view_layer_above*(game: Game) =
   if not game.planning: return
   if game.transitions.target_layer_idx > 0: game.transitions.target_layer_idx -= 1
 
-proc move_down_layer*(game: Game) =
+proc view_layer_below*(game: Game) =
   if not game.planning: return
   if game.transitions.target_layer_idx < game.num_layers() - 1:
     game.transitions.target_layer_idx += 1

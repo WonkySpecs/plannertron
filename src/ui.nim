@@ -35,8 +35,8 @@ proc process_inputs*(ui: UI, game: Game) =
         of SDL_SCANCODE_ESCAPE: game.quitting = true
         of SDL_SCANCODE_Q: game.rotate_left()
         of SDL_SCANCODE_E: game.rotate_right()
-        of SDL_SCANCODE_W: game.move_up_layer()
-        of SDL_SCANCODE_S: game.move_down_layer()
+        of SDL_SCANCODE_W: game.view_layer_above()
+        of SDL_SCANCODE_S: game.view_layer_below()
         of SDL_SCANCODE_SPACE: game.go()
         else: discard
     of MouseButtonDown:

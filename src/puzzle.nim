@@ -21,9 +21,10 @@ proc new_puzzle*(): Puzzle =
       content: none(TileObject))
     tiles2.add Tile(
       bg: textureRegions[TileBg],
-      content: some(TileObject(kind: Elevator, goingDown: true)))
+      content: some(TileObject(kind: Elevator, goingDown: false)))
   tiles1[test_size].content = some(TileObject(kind: Arrow, direction: East))
   tiles1[test_size+1].content = some(TileObject(kind: Arrow, direction: South))
+  tiles1[test_size*2+1].content = some(TileObject(kind: Elevator, going_down: true))
 
   result.layers = @[
     Layer(
