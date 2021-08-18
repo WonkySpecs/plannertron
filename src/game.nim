@@ -26,6 +26,10 @@ proc go*(game: Game) =
   game.robot.facing = South
   game.robot.movement = (game.robot.facing - game.active_layer().facing).as_dir()
 
+proc failure(game: Game, msg: string) =
+  echo msg
+  game.planning = true
+
 proc planning_tick(game: Game, delta: float) =
   let drot = delta * abs(game.transitions.rot) / 4.5
   if game.transitions.rot > drot:
@@ -41,13 +45,17 @@ proc planning_tick(game: Game, delta: float) =
       game.selected_layer_idx = game.transitions.target_layer_idx
       game.transitions.progress = 0
 
-var t = 0.0
 proc running_tick(game: Game, delta: float) =
-  t += delta
-  if t > 80:
-    game.planning = true
-    t = 0
+  let old_prog = game.robot.progress
   game.robot.progress += delta / 20
+  if old_prog < 0.5 and game.robot.progress > 0.5:
+    let
+      next_tile = game.robot.pos + game.robot.movement
+      layer_size = game.active_layer().size
+
+    if next_tile.x < 0 or next_tile.y < 0 or next_tile.x >= layer_size.x or next_tile.y >= layer_size.y:
+      game.failure("hit a wall")
+
   if game.robot.progress > 1:
     game.robot.progress -= 1
     game.robot.pos += game.robot.movement
