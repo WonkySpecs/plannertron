@@ -104,3 +104,7 @@ func as_dir*(facing: Facing): Vec[2] =
 
 func tile_at*(layer: Layer, pos: Vec[2]): Tile {.inline} =
   layer.tiles[(pos.y * layer.size.x + pos.x).int]
+
+proc failure*(game: Game, msg: string) =
+  echo msg
+  game.planning = true

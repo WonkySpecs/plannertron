@@ -26,10 +26,6 @@ proc go*(game: Game) =
   game.robot.facing = South
   game.robot.movement = (game.robot.facing - game.active_layer().facing).as_dir()
 
-proc failure(game: Game, msg: string) =
-  echo msg
-  game.planning = true
-
 proc planning_tick(game: Game, delta: float) =
   let drot = delta * abs(game.transitions.rot) / 4.5
   if game.transitions.rot > drot:

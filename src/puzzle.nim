@@ -7,7 +7,7 @@ func tile_content_asset*(obj: TileObject): Asset =
   case obj.kind:
     of Arrow: ArrowSprite
     of Elevator:
-      if obj.goingDown: ElevatorDownSprite else: ElevatorUpSprite
+      if obj.going_down: ElevatorDownSprite else: ElevatorUpSprite
     else: ArrowSprite
 const test_size = 5
 
@@ -21,10 +21,14 @@ proc new_puzzle*(): Puzzle =
       content: none(TileObject))
     tiles2.add Tile(
       bg: textureRegions[TileBg],
-      content: some(TileObject(kind: Elevator, goingDown: false)))
+      content: some(TileObject(kind: Elevator, going_down: false)))
+  tiles1[0].content = some(TileObject(kind: Elevator, going_down: true))
+  tiles1[test_size*3-1].content = some(TileObject(kind: Arrow, direction: West))
+  tiles1[test_size*3-2].content = some(TileObject(kind: Elevator, going_down: true))
   tiles1[test_size].content = some(TileObject(kind: Arrow, direction: East))
   tiles1[test_size+1].content = some(TileObject(kind: Arrow, direction: South))
   tiles1[test_size*2+1].content = some(TileObject(kind: Elevator, going_down: true))
+  tiles1[test_size*4+1].content = some(TileObject(kind: Elevator, going_down: false))
 
   result.layers = @[
     Layer(
