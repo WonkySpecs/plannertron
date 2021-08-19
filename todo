@@ -1,0 +1,13 @@
+ - Fixed timestep
+ - Elevator transitions
+ - Level serialization
+ - Editor
+ - Menu
+ - Sound
+ - More objects
+   - Spring boards
+   - Lasers
+   - Spike pits
+   - Teleporters
+   - Switches
+ - Tooltips (info on hovered object)
