@@ -1,18 +1,14 @@
 import options
 import sdl2
 import ddnimlib / [drawing, utils, linear]
-import types, puzzle, assets, tile_objects
+import types, puzzle, assets, tile_objects, consts, rendering
 
 proc new_game*(renderer: RendererPtr): Game =
   new result
   result.puzzle = newPuzzle()
   result.quitting = false
   result.planning = true
-  result.layer_render_target = renderer.createTexture(
-      SDL_PIXELFORMAT_RGBA8888,
-      SDL_TEXTUREACCESS_TARGET,
-      (144).cint, (144).cint)
-  result.layer_render_target.setTextureBlendMode(BLENDMODE_BLEND)
+  result.layer_render_targets = create_layer_render_targets(renderer)
   result.robot = Robot(
     tr: texture_regions[RobotSprite])
 
@@ -80,9 +76,9 @@ proc render_layer*(
     prev_render_ptr = view.renderer.getRenderTarget()
     layer = game.puzzle.layers[layerIdx]
     size = layer.size.x.int
-    temp_render_ptr = game.layer_render_target
+    render_target = game.layer_render_targets[size]
 
-  view.renderer.setRenderTarget(temp_render_ptr)
+  view.renderer.setRenderTarget(render_target)
   view.renderer.setDrawColor(r=0, g=0, b=0)
   view.renderer.clear()
   view.draw(
@@ -90,14 +86,13 @@ proc render_layer*(
     r(0, 0, size * 32, size * 32),
     robot)
   view.renderer.setRenderTarget(prev_render_ptr)
-  temp_render_ptr.setTextureAlphaMod(alpha.uint8)
-  var tr = texRegion(temp_render_ptr, none(Rect))
+  render_target.setTextureAlphaMod(alpha.uint8)
+  var tr = texRegion(render_target, none(Rect))
   view.renderAbs(
     tr,
     dest.pos,
     dest.size,
     layer.facing.as_rot() + rot)
-  temp_render_ptr.setTextureAlphaMod(255)
 
 proc planning_draw(view: View, game: Game, dest: Rect) =
   view.start()

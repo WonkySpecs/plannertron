@@ -1,4 +1,4 @@
-import options, sugar
+import options
 import sdl2
 import ddnimlib / [drawing, linear, utils]
 import types, assets

@@ -1,7 +1,7 @@
 import strformat, options
 import sdl2
-import ddnimlib / [fpstimer, ui, linear, utils, drawing, colors]
-import types, game, consts
+import ddnimlib / [fpstimer, ui, linear, utils, drawing]
+import types, game, consts, rendering
 
 type
   UI* = ref object
@@ -9,7 +9,7 @@ type
     sw*, sh*: int
     #tooltip: Option[string]
     timer: FPSTimer
-    render_targets: array[max_layers, TexturePtr]
+    render_targets: array[max_layers, array[min_layer_size..max_layer_size, TexturePtr]]
 
 proc new_ui*(sw, sh: int, renderer: RendererPtr): UI =
   new result
@@ -17,12 +17,9 @@ proc new_ui*(sw, sh: int, renderer: RendererPtr): UI =
   result.sh = sh
   result.ctx = newUIContext("assets/framd.ttf")
   for n in 0..<max_layers:
-    let tex = renderer.createTexture(
-      SDL_PIXELFORMAT_RGBA8888,
-      SDL_TEXTUREACCESS_TARGET,
-      (96).cint, (96).cint)
-    tex.setTextureBlendMode(BLENDMODE_BLEND)
-    result.render_targets[n] = tex
+    let targets = create_layer_render_targets(renderer)
+    for i in min_layer_size..max_layer_size:
+      result.render_targets[n][i] = targets[i]
 
 proc process_inputs*(ui: UI, game: Game) =
   ui.ctx.start_input()
@@ -56,12 +53,13 @@ proc draw*(view: View, ui: UI, game: Game) =
   var textures = newSeq[TextureRegion]()
   for i in 0..<game.num_layers():
     let
-      new_render_target = ui.render_targets[i]
-      target_size = new_render_target.getSize()
+      layer_size = game.active_layer().size.x.int
+      render_target = ui.render_targets[i][layer_size]
+      target_size = render_target.getSize()
       dest = r(0, 0, target_size.x.int, target_size.y.int)
-    view.renderer.setRenderTarget(new_render_target)
+    view.renderer.setRenderTarget(render_target)
     view.render_layer(game, i, dest)
-    textures.add(texRegion(new_render_target, none(Rect)))
+    textures.add(texRegion(render_target, none(Rect)))
   view.renderer.setRenderTarget(orig_render_target)
 
   const

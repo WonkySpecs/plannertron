@@ -1,6 +1,7 @@
 from sdl2 import TexturePtr
 import options
 import ddnimlib / [drawing, linear]
+import consts
 
 type
   Asset* = enum
@@ -51,7 +52,7 @@ type
     robot*: Robot
     planning*: bool
     quitting*: bool
-    layer_render_target*: TexturePtr
+    layer_render_targets*: array[min_layer_size..max_layer_size, TexturePtr]
     transitions*: LayerTransitions
 
 func rot_right*(facing: Facing): Facing =
