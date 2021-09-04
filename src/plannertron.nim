@@ -1,6 +1,7 @@
+import options
 import sdl2, sdl2 / [image, ttf]
 import ddnimlib / [init, drawing, utils]
-import assets, ui, game
+import assets, ui, game, screens
 
 type
   SDLException = object of Defect
@@ -10,7 +11,6 @@ proc main =
     fps_cap = -1
     frame_time_min_ms = (1000 / fps_cap).int
     fs = false
-    expected_frame_ms = 1000 / 60
 
   initSdl()
 
@@ -30,25 +30,19 @@ proc main =
   var
     last_frame = getTicks().int
     view = init_view(renderer, vw, vh)
-    game = new_game(renderer)
-    ui = new_ui(vw, vh, renderer)
+    screen = GameLevel(
+      ui: new_ui(vw, vh, renderer),
+      game: new_game(renderer))
+    next = some(Level)
 
-  while not game.quitting:
+  while not next.isNone:
     let
       time = getTicks().int
       delta = (time - last_frame)
     last_frame = time
 
-    ui.process_inputs(game)
-    game.tick(delta.float / expected_frame_ms)
-    let
-      h_pad = 30
-      frac = 3 / 4
-      w = (vw.float  * frac).int - h_pad * 2
-      main_dest = r(h_pad, ((vh / 2) - (w / 2)).int, w, w)
-    view.draw(game, main_dest)
-    view.draw(ui, game)
-    view.renderer.present()
+    next = screen.update(delta)
+    view.draw(screen, vw.int, vh.int)
 
     if fps_cap > 0 and delta < frame_time_min_ms:
        delay((frame_time_min_ms - delta).uint32)

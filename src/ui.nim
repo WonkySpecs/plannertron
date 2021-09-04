@@ -4,14 +4,17 @@ import ddnimlib / [fpstimer, ui, linear, utils, drawing]
 import types, game, consts, rendering
 
 type
-  UI* = ref object
+  UIKind* = enum
+    MainMenu, GameLevel
+
+  LevelUI* = ref object
     ctx*: Context
     sw*, sh*: int
     #tooltip: Option[string]
     timer: FPSTimer
     render_targets: array[max_layers, array[min_layer_size..max_layer_size, TexturePtr]]
 
-proc new_ui*(sw, sh: int, renderer: RendererPtr): UI =
+proc new_ui*(sw, sh: int, renderer: RendererPtr): LevelUI =
   new result
   result.sw = sw
   result.sh = sh
@@ -21,7 +24,7 @@ proc new_ui*(sw, sh: int, renderer: RendererPtr): UI =
     for i in min_layer_size..max_layer_size:
       result.render_targets[n][i] = targets[i]
 
-proc process_inputs*(ui: UI, game: Game) =
+proc process_inputs*(ui: LevelUI, game: Game) =
   ui.ctx.start_input()
   var ev = defaultEvent
   while pollEvent(ev):
@@ -46,7 +49,7 @@ proc process_inputs*(ui: UI, game: Game) =
     else: discard
     ui.ctx.setMousePos(getMousePos())
 
-proc draw*(view: View, ui: UI, game: Game) =
+proc draw*(view: View, ui: LevelUI, game: Game) =
   ui.ctx.start(view.renderer)
 
   let orig_render_target = view.renderer.getRenderTarget()
