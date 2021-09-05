@@ -30,7 +30,7 @@ proc draw(view: View, level: GameLevel, vw, vh: int) =
     h = w
     main_dest = r(h_pad, ((vh / 2) - (h / 2)).int, w, h)
   view.draw(level.game, main_dest)
-  view.draw(level.ui, level.game)
+  view.draw(level.ui, level.game, vw, vh)
   view.renderer.present()
 
 proc update*[Screen](screen: Screen, frameMS: int): Option[NextScreen] =

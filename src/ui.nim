@@ -9,15 +9,12 @@ type
 
   LevelUI* = ref object
     ctx*: Context
-    sw*, sh*: int
     #tooltip: Option[string]
     timer: FPSTimer
     render_targets: array[max_layers, array[min_layer_size..max_layer_size, TexturePtr]]
 
-proc new_ui*(sw, sh: int, renderer: RendererPtr): LevelUI =
+proc new_ui*(renderer: RendererPtr): LevelUI =
   new result
-  result.sw = sw
-  result.sh = sh
   result.ctx = newUIContext("assets/framd.ttf")
   for n in 0..<max_layers:
     let targets = create_layer_render_targets(renderer)
@@ -49,7 +46,7 @@ proc process_inputs*(ui: LevelUI, game: Game) =
     else: discard
     ui.ctx.setMousePos(getMousePos())
 
-proc draw*(view: View, ui: LevelUI, game: Game) =
+proc draw*(view: View, ui: LevelUI, game: Game, vw, vh: int) =
   ui.ctx.start(view.renderer)
 
   let orig_render_target = view.renderer.getRenderTarget()
@@ -70,10 +67,10 @@ proc draw*(view: View, ui: LevelUI, game: Game) =
     v_pad = 80
   let reorder = ui.ctx.doReorderableIcons(
     "layer-previews",
-    vec(ui.sw * 3 / 4 + h_pad, v_pad),
+    vec(vw * 3 / 4 + h_pad, v_pad),
     textures,
     fill = c(40, 40, 40),
-    size = some(vec(ui.sw / 4 - 2 * h_pad, ui.sh - 2 * v_pad)))
+    size = some(vec(vw / 4 - 2 * h_pad, vh - 2 * v_pad)))
   if reorder.isSome:
     let
       a = reorder.get().old_pos
@@ -87,7 +84,7 @@ proc draw*(view: View, ui: LevelUI, game: Game) =
   if game.planning and ui.ctx.doButtonLabel(
       "Go",
       size=42,
-      pos=vec(ui.sw - 120, ui.sh - 70),
+      pos=vec(vw - 120, vh - 70),
       fg=c(240, 240, 230),
       bg=some(c(70, 210, 50)),
       hover_bg=some(c(25, 190, 30)),
@@ -97,5 +94,5 @@ proc draw*(view: View, ui: LevelUI, game: Game) =
   ui.timer.tick()
   discard ui.ctx.doLabel(text= fmt"{ui.timer.fps():.2f} fps",
                          fg=color(255, 0, 0, 255),
-                         pos=vec(10, ui.sh - 20),
+                         pos=vec(10, vh - 20),
                          size=10)

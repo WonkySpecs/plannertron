@@ -31,7 +31,7 @@ proc main =
     last_frame = getTicks().int
     view = init_view(renderer, vw, vh)
     screen = GameLevel(
-      ui: new_ui(vw, vh, renderer),
+      ui: new_ui(renderer),
       game: new_game(renderer))
     next = some(Level)
 
