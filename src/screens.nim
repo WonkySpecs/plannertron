@@ -8,21 +8,24 @@ const
 
 type
   NextScreen* = enum
-    MainMenu, Level
+    MainMenu, GameLevel
 
-  GameLevel* = ref object
-    ui*: LevelUI
+  GameLevelScreen* = ref object
+    ui*: GameLevelUI
     game*: Game
 
-proc update(level: GameLevel, frameMS: int): Option[NextScreen] =
+  MainMenuScreen* = ref object
+    ui*: MainMenuUI
+
+proc update(level: GameLevelScreen, frameMS: int): Option[NextScreen] =
   level.ui.process_inputs(level.game)
   level.game.tick(frameMS.float / expected_frame_ms.float)
   if level.game.quitting:
     none(NextScreen)
   else:
-    some(Level)
+    some(GameLevel)
 
-proc draw(view: View, level: GameLevel, vw, vh: int) =
+proc draw(view: View, level: GameLevelScreen, vw, vh: int) =
   let
     h_pad = 30
     frac = 3 / 4

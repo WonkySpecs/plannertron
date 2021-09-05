@@ -30,10 +30,10 @@ proc main =
   var
     last_frame = getTicks().int
     view = init_view(renderer, vw, vh)
-    screen = GameLevel(
-      ui: new_ui(renderer),
+    screen = GameLevelScreen(
+      ui: new_game_level_ui(renderer),
       game: new_game(renderer))
-    next = some(Level)
+    next = some(GameLevel)
 
   while not next.isNone:
     let

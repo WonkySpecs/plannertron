@@ -4,16 +4,18 @@ import ddnimlib / [fpstimer, ui, linear, utils, drawing]
 import types, game, consts, rendering
 
 type
-  UIKind* = enum
-    MainMenu, GameLevel
-
-  LevelUI* = ref object
-    ctx*: Context
-    #tooltip: Option[string]
+  UI = ref object of RootObj
+    ctx: Context
     timer: FPSTimer
-    render_targets: array[max_layers, array[min_layer_size..max_layer_size, TexturePtr]]
 
-proc new_ui*(renderer: RendererPtr): LevelUI =
+  GameLevelUI* = ref object of UI
+    render_targets: array[max_layers,
+                      array[min_layer_size..max_layer_size,
+                        TexturePtr]]
+
+  MainMenuUI* = ref object of UI
+
+proc new_game_level_ui*(renderer: RendererPtr): GameLevelUI =
   new result
   result.ctx = newUIContext("assets/framd.ttf")
   for n in 0..<max_layers:
@@ -21,7 +23,7 @@ proc new_ui*(renderer: RendererPtr): LevelUI =
     for i in min_layer_size..max_layer_size:
       result.render_targets[n][i] = targets[i]
 
-proc process_inputs*(ui: LevelUI, game: Game) =
+proc process_inputs*(ui: GameLevelUI, game: Game) =
   ui.ctx.start_input()
   var ev = defaultEvent
   while pollEvent(ev):
@@ -46,7 +48,7 @@ proc process_inputs*(ui: LevelUI, game: Game) =
     else: discard
     ui.ctx.setMousePos(getMousePos())
 
-proc draw*(view: View, ui: LevelUI, game: Game, vw, vh: int) =
+proc draw*(view: View, ui: GameLevelUI, game: Game, vw, vh: int) =
   ui.ctx.start(view.renderer)
 
   let orig_render_target = view.renderer.getRenderTarget()
