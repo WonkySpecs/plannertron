@@ -1,4 +1,4 @@
-import strformat, options
+import strformat, options, strutils
 import sdl2
 import ddnimlib / [fpstimer, ui, linear, utils, drawing]
 import types, game, consts, rendering
@@ -14,6 +14,7 @@ type
                         TexturePtr]]
 
   MainMenuUI* = ref object of UI
+    start_level*, quitting*: bool
 
 proc new_game_level_ui*(renderer: RendererPtr): GameLevelUI =
   new result
@@ -98,3 +99,51 @@ proc draw*(view: View, ui: GameLevelUI, game: Game, vw, vh: int) =
                          fg=color(255, 0, 0, 255),
                          pos=vec(10, vh - 20),
                          size=10)
+
+proc new_main_menu_ui*(renderer: RendererPtr): MainMenuUI =
+  new result
+  result.ctx = newUIContext("assets/framd.ttf")
+
+proc process_inputs*(ui: MainMenuUI) =
+  ui.ctx.start_input()
+  var ev = defaultEvent
+  while pollEvent(ev):
+    case ev.kind:
+    of QuitEvent: ui.quitting = true
+    of KeyDown:
+      case ev.key.keysym.scancode:
+        of SDL_SCANCODE_ESCAPE: ui.quitting = true
+        of SDL_SCANCODE_SPACE: ui.start_level = true
+        else: discard
+    of MouseButtonDown:
+      case ev.button.button:
+        of BUTTON_LEFT: ui.ctx.pressMouse(vec(ev.button.x, ev.button.y))
+        else: discard
+    of MouseButtonUp:
+      if ev.button.button == BUTTON_LEFT:
+        ui.ctx.releaseMouse(vec(ev.button.x, ev.button.y))
+    else: discard
+    ui.ctx.setMousePos(getMousePos())
+
+var c = 0
+proc draw*(view: View, ui: MainMenuUI, vw, vh: int) =
+  ui.ctx.start(view.renderer)
+  if ui.ctx.doButtonLabel(
+      "Play",
+      size=42,
+      pos=vec(0, 0),
+      fg=c(240, 240, 230),
+      bg=some(c(70, 210, 50)),
+      hover_bg=some(c(25, 190, 30)),
+      active_bg=some(c(10, 150, 0))) == Clicked:
+    ui.start_level = true
+
+  if ui.ctx.doButtonLabel(
+      "Useless clicks: " & $c,
+      size=42,
+      pos=vec(70, 70),
+      fg=c(240, 240, 230),
+      bg=some(c(70, 210, 50)),
+      hover_bg=some(c(25, 190, 30)),
+      active_bg=some(c(10, 150, 0))) == Clicked:
+    inc c

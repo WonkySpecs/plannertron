@@ -7,25 +7,30 @@ const
   expected_frame_ms = 1000 / 60
 
 type
-  NextScreen* = enum
+  ScreenKind* = enum
     MainMenu, GameLevel
 
-  GameLevelScreen* = ref object
+  Screen* = ref object of RootObj
+
+  GameLevelScreen* = ref object of Screen
     ui*: GameLevelUI
     game*: Game
 
-  MainMenuScreen* = ref object
+  MainMenuScreen* = ref object of Screen
     ui*: MainMenuUI
 
-proc update(level: GameLevelScreen, frameMS: int): Option[NextScreen] =
+method update*(screen: Screen, frameMS: int): Option[ScreenKind] {.base} = discard
+method draw*(screen: Screen, view: View, vw, vh: int) {.base} = discard
+
+method update*(level: GameLevelScreen, frameMS: int): Option[ScreenKind] =
   level.ui.process_inputs(level.game)
   level.game.tick(frameMS.float / expected_frame_ms.float)
   if level.game.quitting:
-    none(NextScreen)
+    none(ScreenKind)
   else:
     some(GameLevel)
 
-proc draw(view: View, level: GameLevelScreen, vw, vh: int) =
+method draw*(level: GameLevelScreen, view: View, vw, vh: int) =
   let
     h_pad = 30
     frac = 3 / 4
@@ -36,8 +41,17 @@ proc draw(view: View, level: GameLevelScreen, vw, vh: int) =
   view.draw(level.ui, level.game, vw, vh)
   view.renderer.present()
 
-proc update*[Screen](screen: Screen, frameMS: int): Option[NextScreen] =
-  screen.update(frameMS)
+method update*(menu: MainMenuScreen, frameMS: int): Option[ScreenKind] =
+  menu.ui.process_inputs()
+  if menu.ui.start_level:
+    some(GameLevel)
+  elif menu.ui.quitting:
+    none(ScreenKind)
+  else:
+    some(MainMenu)
 
-proc draw*[Screen](view: View, screen: Screen, vw, vh: int) =
-  view.draw(screen, vw, vh)
+method draw*(menu: MainMenuScreen, view: View, vw, vh: int) =
+  view.renderer.setDrawColor(r=40, g=0, b=100)
+  view.renderer.clear()
+  view.draw(menu.ui, vw, vh)
+  view.renderer.present()

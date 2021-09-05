@@ -1,6 +1,6 @@
 import options
 import sdl2, sdl2 / [image, ttf]
-import ddnimlib / [init, drawing, utils]
+import ddnimlib / [init, drawing]
 import assets, ui, game, screens
 
 type
@@ -30,19 +30,30 @@ proc main =
   var
     last_frame = getTicks().int
     view = init_view(renderer, vw, vh)
-    screen = GameLevelScreen(
-      ui: new_game_level_ui(renderer),
-      game: new_game(renderer))
-    next = some(GameLevel)
+    screen: Screen = MainMenuScreen(
+      ui: new_main_menu_ui(renderer))
+    cur_screen = MainMenu
+    next_screen = some(MainMenu)
 
-  while not next.isNone:
+  while next_screen.isSome:
     let
       time = getTicks().int
       delta = (time - last_frame)
     last_frame = time
 
-    next = screen.update(delta)
-    view.draw(screen, vw.int, vh.int)
+    next_screen = screen.update(delta)
+    screen.draw(view, vw.int, vh.int)
+
+    if next_screen.isSome and next_screen.get() != cur_screen:
+      case next_screen.get():
+      of GameLevel:
+        screen = GameLevelScreen(
+          ui: new_game_level_ui(renderer),
+          game: new_game(renderer))
+      of MainMenu: screen = MainMenuScreen(
+        ui: new_main_menu_ui(renderer))
+
+      cur_screen = next_screen.get()
 
     if fps_cap > 0 and delta < frame_time_min_ms:
        delay((frame_time_min_ms - delta).uint32)
