@@ -52,6 +52,9 @@ proc main =
           game: new_game(renderer))
       of MainMenu: screen = MainMenuScreen(
         ui: new_main_menu_ui(renderer))
+      of EditorMenu: screen = EditorMenuScreen(
+        ui: new_editor_menu_ui(renderer))
+      else: discard
 
       cur_screen = next_screen.get()
 

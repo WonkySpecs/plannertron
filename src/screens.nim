@@ -7,9 +7,6 @@ const
   expected_frame_ms = 1000 / 60
 
 type
-  ScreenKind* = enum
-    MainMenu, GameLevel
-
   Screen* = ref object of RootObj
 
   GameLevelScreen* = ref object of Screen
@@ -19,13 +16,16 @@ type
   MainMenuScreen* = ref object of Screen
     ui*: MainMenuUI
 
+  EditorMenuScreen* = ref object of Screen
+    ui*: EditorMenuUI
+
 method update*(screen: Screen, frameMS: int): Option[ScreenKind] {.base} = discard
 method draw*(screen: Screen, view: View, vw, vh: int) {.base} = discard
 
 method update*(level: GameLevelScreen, frameMS: int): Option[ScreenKind] =
   level.ui.process_inputs(level.game)
   level.game.tick(frameMS.float / expected_frame_ms.float)
-  if level.game.quitting:
+  if level.ui.quitting:
     none(ScreenKind)
   else:
     some(GameLevel)
@@ -47,10 +47,28 @@ method update*(menu: MainMenuScreen, frameMS: int): Option[ScreenKind] =
     some(GameLevel)
   elif menu.ui.quitting:
     none(ScreenKind)
+  elif menu.ui.next_screen.isSome:
+    menu.ui.next_screen
   else:
     some(MainMenu)
 
 method draw*(menu: MainMenuScreen, view: View, vw, vh: int) =
+  view.renderer.setDrawColor(r=40, g=0, b=100)
+  view.renderer.clear()
+  view.draw(menu.ui, vw, vh)
+  view.renderer.present()
+
+method update*(menu: EditorMenuScreen, frameMS: int): Option[ScreenKind] =
+  menu.ui.process_inputs()
+
+  if menu.ui.quitting:
+    none(ScreenKind)
+  elif menu.ui.next_screen.isSome:
+    menu.ui.next_screen
+  else:
+    some(EditorMenu)
+
+method draw*(menu: EditorMenuScreen, view: View, vw, vh: int) =
   view.renderer.setDrawColor(r=40, g=0, b=100)
   view.renderer.clear()
   view.draw(menu.ui, vw, vh)

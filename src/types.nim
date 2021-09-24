@@ -51,7 +51,6 @@ type
     running_puzzle*: Puzzle
     robot*: Robot
     planning*: bool
-    quitting*: bool
     layer_render_targets*: array[min_layer_size..max_layer_size, TexturePtr]
     transitions*: LayerTransitions
 

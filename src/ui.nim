@@ -1,12 +1,17 @@
 import strformat, options, strutils
 import sdl2
-import ddnimlib / [fpstimer, ui, linear, utils, drawing]
+import ddnimlib / [fpstimer, linear, utils, drawing, ui]
 import types, game, consts, rendering
 
 type
+  ScreenKind* = enum
+    MainMenu, GameLevel, EditorMenu, LevelEditor
+
   UI = ref object of RootObj
     ctx: Context
     timer: FPSTimer
+    quitting*: bool
+    next_screen*: Option[ScreenKind]
 
   GameLevelUI* = ref object of UI
     render_targets: array[max_layers,
@@ -14,7 +19,10 @@ type
                         TexturePtr]]
 
   MainMenuUI* = ref object of UI
-    start_level*, quitting*: bool
+    start_level*: bool
+
+  EditorMenuUI* = ref object of UI
+    level_size*: int
 
 proc new_game_level_ui*(renderer: RendererPtr): GameLevelUI =
   new result
@@ -29,10 +37,10 @@ proc process_inputs*(ui: GameLevelUI, game: Game) =
   var ev = defaultEvent
   while pollEvent(ev):
     case ev.kind:
-    of QuitEvent: game.quitting = true
+    of QuitEvent: ui.quitting = true
     of KeyDown:
       case ev.key.keysym.scancode:
-        of SDL_SCANCODE_ESCAPE: game.quitting = true
+        of SDL_SCANCODE_ESCAPE: ui.quitting = true
         of SDL_SCANCODE_Q: game.rotate_left()
         of SDL_SCANCODE_E: game.rotate_right()
         of SDL_SCANCODE_W: game.view_layer_above()
@@ -125,25 +133,70 @@ proc process_inputs*(ui: MainMenuUI) =
     else: discard
     ui.ctx.setMousePos(getMousePos())
 
-var c = 0
+var useless_clicks = 0
 proc draw*(view: View, ui: MainMenuUI, vw, vh: int) =
   ui.ctx.start(view.renderer)
   if ui.ctx.doButtonLabel(
       "Play",
+      size=42,
+      pos=vec(10, 0),
+      fg=c(240, 240, 230),
+      bg=some(c(70, 210, 50)),
+      hover_bg=some(c(25, 190, 30)),
+      active_bg=some(c(10, 150, 0))) == Clicked:
+    ui.start_level = true
+  elif ui.ctx.doButtonLabel(
+      "Level Editor",
+      size=42,
+      pos=vec(10, 50),
+      fg=c(240, 240, 230),
+      bg=some(c(70, 210, 50)),
+      hover_bg=some(c(25, 190, 30)),
+      active_bg=some(c(10, 150, 0))) == Clicked:
+    ui.next_screen = some(EditorMenu)
+
+  if ui.ctx.doButtonLabel(
+      "Useless clicks: " & $useless_clicks,
+      size=42,
+      pos=vec(70, 350),
+      fg=c(240, 240, 230),
+      bg=some(c(70, 210, 50)),
+      hover_bg=some(c(25, 190, 30)),
+      active_bg=some(c(10, 150, 0))) == Clicked:
+    inc useless_clicks
+
+proc new_editor_menu_ui*(renderer: RendererPtr): EditorMenuUI =
+  new result
+  result.ctx = newUIContext("assets/framd.ttf")
+
+proc process_inputs*(ui: EditorMenuUI) =
+  ui.ctx.start_input()
+  var ev = defaultEvent
+  while pollEvent(ev):
+    case ev.kind:
+    of QuitEvent: ui.quitting = true
+    of KeyDown:
+      case ev.key.keysym.scancode:
+        of SDL_SCANCODE_ESCAPE: ui.quitting = true
+        else: discard
+    of MouseButtonDown:
+      case ev.button.button:
+        of BUTTON_LEFT: ui.ctx.pressMouse(vec(ev.button.x, ev.button.y))
+        else: discard
+    of MouseButtonUp:
+      if ev.button.button == BUTTON_LEFT:
+        ui.ctx.releaseMouse(vec(ev.button.x, ev.button.y))
+    else: discard
+    ui.ctx.setMousePos(getMousePos())
+
+proc draw*(view: View, ui: EditorMenuUI, vw, vh: int) =
+  ui.ctx.start(view.renderer)
+  if ui.ctx.doButtonLabel(
+      "Back",
       size=42,
       pos=vec(0, 0),
       fg=c(240, 240, 230),
       bg=some(c(70, 210, 50)),
       hover_bg=some(c(25, 190, 30)),
       active_bg=some(c(10, 150, 0))) == Clicked:
-    ui.start_level = true
-
-  if ui.ctx.doButtonLabel(
-      "Useless clicks: " & $c,
-      size=42,
-      pos=vec(70, 70),
-      fg=c(240, 240, 230),
-      bg=some(c(70, 210, 50)),
-      hover_bg=some(c(25, 190, 30)),
-      active_bg=some(c(10, 150, 0))) == Clicked:
-    inc c
+    ui.next_screen = some(MainMenu)
