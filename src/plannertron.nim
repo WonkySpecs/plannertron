@@ -54,7 +54,11 @@ proc main =
         ui: new_main_menu_ui(renderer))
       of EditorMenu: screen = EditorMenuScreen(
         ui: new_editor_menu_ui(renderer))
-      else: discard
+      of LevelEditor:
+        screen = new_editor_screen(
+          renderer,
+          # This is an ugly hack
+          screen.EditorMenuScreen.ui.level_size)
 
       cur_screen = next_screen.get()
 

@@ -24,6 +24,8 @@ type
   EditorMenuUI* = ref object of UI
     level_size*: int
 
+  LevelEditorUI* = ref object of UI
+
 proc new_game_level_ui*(renderer: RendererPtr): GameLevelUI =
   new result
   result.ctx = newUIContext("assets/framd.ttf")
@@ -200,3 +202,53 @@ proc draw*(view: View, ui: EditorMenuUI, vw, vh: int) =
       hover_bg=some(c(25, 190, 30)),
       active_bg=some(c(10, 150, 0))) == Clicked:
     ui.next_screen = some(MainMenu)
+
+  const
+    num_rows = 2
+    num_btns = max_layer_size - min_layer_size + 1
+    row_size = int((num_btns + 1) / num_rows)
+
+  for ls in min_layer_size..max_layer_size:
+    let
+      i = ls - min_layer_size
+      second_line = i >= row_size
+      y = if second_line: 150 else: 100
+      x = 30 * (if second_line: i - row_size else: i)
+
+    if ui.ctx.doButtonLabel(
+        $ls,
+        size=42,
+        pos=vec(x, y),
+        fg=c(240, 240, 230),
+        bg=some(c(70, 210, 50)),
+        hover_bg=some(c(25, 190, 30)),
+        active_bg=some(c(10, 150, 0))) == Clicked:
+      ui.level_size = ls
+      ui.next_screen = some(LevelEditor)
+
+proc new_level_editor_ui*(renderer: RendererPtr): LevelEditorUI =
+  new result
+  result.ctx = newUIContext("assets/framd.ttf")
+
+proc process_inputs*(ui: LevelEditorUI) =
+  ui.ctx.start_input()
+  var ev = defaultEvent
+  while pollEvent(ev):
+    case ev.kind:
+    of QuitEvent: ui.quitting = true
+    of KeyDown:
+      case ev.key.keysym.scancode:
+        of SDL_SCANCODE_ESCAPE: ui.quitting = true
+        else: discard
+    of MouseButtonDown:
+      case ev.button.button:
+        of BUTTON_LEFT: ui.ctx.pressMouse(vec(ev.button.x, ev.button.y))
+        else: discard
+    of MouseButtonUp:
+      if ev.button.button == BUTTON_LEFT:
+        ui.ctx.releaseMouse(vec(ev.button.x, ev.button.y))
+    else: discard
+    ui.ctx.setMousePos(getMousePos())
+
+proc draw*(view: View, ui: LevelEditorUI, vw, vh: int) =
+  ui.ctx.start(view.renderer)

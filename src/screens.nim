@@ -19,6 +19,10 @@ type
   EditorMenuScreen* = ref object of Screen
     ui*: EditorMenuUI
 
+  LevelEditorScreen* = ref object of Screen
+    ui*: LevelEditorUI
+    level_size*: int
+
 method update*(screen: Screen, frameMS: int): Option[ScreenKind] {.base} = discard
 method draw*(screen: Screen, view: View, vw, vh: int) {.base} = discard
 
@@ -72,4 +76,25 @@ method draw*(menu: EditorMenuScreen, view: View, vw, vh: int) =
   view.renderer.setDrawColor(r=40, g=0, b=100)
   view.renderer.clear()
   view.draw(menu.ui, vw, vh)
+  view.renderer.present()
+
+proc new_editor_screen*(renderer: RendererPtr, level_size: int): LevelEditorScreen =
+  LevelEditorScreen(
+    ui: new_level_editor_ui(renderer),
+    level_size: level_size)
+
+method update*(editor: LevelEditorScreen, frameMS: int): Option[ScreenKind] =
+  editor.ui.process_inputs()
+
+  if editor.ui.quitting:
+    none(ScreenKind)
+  elif editor.ui.next_screen.isSome:
+    editor.ui.next_screen
+  else:
+    some(LevelEditor)
+
+method draw*(editor: LevelEditorScreen, view: View, vw, vh: int) =
+  view.renderer.setDrawColor(r=40, g=0, b=100)
+  view.renderer.clear()
+  view.draw(editor.ui, vw, vh)
   view.renderer.present()
