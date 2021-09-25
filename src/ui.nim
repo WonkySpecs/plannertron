@@ -12,6 +12,7 @@ type
     timer: FPSTimer
     quitting*: bool
     next_screen*: Option[ScreenKind]
+    frame_events: seq[Event]
 
   GameLevelUI* = ref object of UI
     render_targets: array[max_layers,
@@ -26,28 +27,17 @@ type
 
   LevelEditorUI* = ref object of UI
 
-proc new_game_level_ui*(renderer: RendererPtr): GameLevelUI =
-  new result
-  result.ctx = newUIContext("assets/framd.ttf")
-  for n in 0..<max_layers:
-    let targets = create_layer_render_targets(renderer)
-    for i in min_layer_size..max_layer_size:
-      result.render_targets[n][i] = targets[i]
-
-proc process_inputs*(ui: GameLevelUI, game: Game) =
+proc shared_process_inputs(ui:  UI) =
   ui.ctx.start_input()
+  ui.frame_events.setLen(0)
   var ev = defaultEvent
   while pollEvent(ev):
+    ui.frame_events.add(ev)
     case ev.kind:
     of QuitEvent: ui.quitting = true
     of KeyDown:
       case ev.key.keysym.scancode:
         of SDL_SCANCODE_ESCAPE: ui.quitting = true
-        of SDL_SCANCODE_Q: game.rotate_left()
-        of SDL_SCANCODE_E: game.rotate_right()
-        of SDL_SCANCODE_W: game.view_layer_above()
-        of SDL_SCANCODE_S: game.view_layer_below()
-        of SDL_SCANCODE_SPACE: game.go()
         else: discard
     of MouseButtonDown:
       case ev.button.button:
@@ -58,6 +48,28 @@ proc process_inputs*(ui: GameLevelUI, game: Game) =
         ui.ctx.releaseMouse(vec(ev.button.x, ev.button.y))
     else: discard
     ui.ctx.setMousePos(getMousePos())
+
+proc new_game_level_ui*(renderer: RendererPtr): GameLevelUI =
+  new result
+  result.ctx = newUIContext("assets/framd.ttf")
+  for n in 0..<max_layers:
+    let targets = create_layer_render_targets(renderer)
+    for i in min_layer_size..max_layer_size:
+      result.render_targets[n][i] = targets[i]
+
+proc process_inputs*(ui: GameLevelUI, game: Game) =
+  ui.shared_process_inputs()
+  for ev in ui.frame_events:
+    case ev.kind:
+    of KeyDown:
+      case ev.key.keysym.scancode:
+        of SDL_SCANCODE_Q: game.rotate_left()
+        of SDL_SCANCODE_E: game.rotate_right()
+        of SDL_SCANCODE_W: game.view_layer_above()
+        of SDL_SCANCODE_S: game.view_layer_below()
+        of SDL_SCANCODE_SPACE: game.go()
+        else: discard
+    else: discard
 
 proc draw*(view: View, ui: GameLevelUI, game: Game, vw, vh: int) =
   ui.ctx.start(view.renderer)
@@ -115,25 +127,14 @@ proc new_main_menu_ui*(renderer: RendererPtr): MainMenuUI =
   result.ctx = newUIContext("assets/framd.ttf")
 
 proc process_inputs*(ui: MainMenuUI) =
-  ui.ctx.start_input()
-  var ev = defaultEvent
-  while pollEvent(ev):
+  ui.shared_process_inputs()
+  for ev in ui.frame_events:
     case ev.kind:
-    of QuitEvent: ui.quitting = true
     of KeyDown:
       case ev.key.keysym.scancode:
-        of SDL_SCANCODE_ESCAPE: ui.quitting = true
         of SDL_SCANCODE_SPACE: ui.start_level = true
         else: discard
-    of MouseButtonDown:
-      case ev.button.button:
-        of BUTTON_LEFT: ui.ctx.pressMouse(vec(ev.button.x, ev.button.y))
-        else: discard
-    of MouseButtonUp:
-      if ev.button.button == BUTTON_LEFT:
-        ui.ctx.releaseMouse(vec(ev.button.x, ev.button.y))
     else: discard
-    ui.ctx.setMousePos(getMousePos())
 
 var useless_clicks = 0
 proc draw*(view: View, ui: MainMenuUI, vw, vh: int) =
@@ -172,24 +173,7 @@ proc new_editor_menu_ui*(renderer: RendererPtr): EditorMenuUI =
   result.ctx = newUIContext("assets/framd.ttf")
 
 proc process_inputs*(ui: EditorMenuUI) =
-  ui.ctx.start_input()
-  var ev = defaultEvent
-  while pollEvent(ev):
-    case ev.kind:
-    of QuitEvent: ui.quitting = true
-    of KeyDown:
-      case ev.key.keysym.scancode:
-        of SDL_SCANCODE_ESCAPE: ui.quitting = true
-        else: discard
-    of MouseButtonDown:
-      case ev.button.button:
-        of BUTTON_LEFT: ui.ctx.pressMouse(vec(ev.button.x, ev.button.y))
-        else: discard
-    of MouseButtonUp:
-      if ev.button.button == BUTTON_LEFT:
-        ui.ctx.releaseMouse(vec(ev.button.x, ev.button.y))
-    else: discard
-    ui.ctx.setMousePos(getMousePos())
+  ui.shared_process_inputs()
 
 proc draw*(view: View, ui: EditorMenuUI, vw, vh: int) =
   ui.ctx.start(view.renderer)
@@ -231,24 +215,7 @@ proc new_level_editor_ui*(renderer: RendererPtr): LevelEditorUI =
   result.ctx = newUIContext("assets/framd.ttf")
 
 proc process_inputs*(ui: LevelEditorUI) =
-  ui.ctx.start_input()
-  var ev = defaultEvent
-  while pollEvent(ev):
-    case ev.kind:
-    of QuitEvent: ui.quitting = true
-    of KeyDown:
-      case ev.key.keysym.scancode:
-        of SDL_SCANCODE_ESCAPE: ui.quitting = true
-        else: discard
-    of MouseButtonDown:
-      case ev.button.button:
-        of BUTTON_LEFT: ui.ctx.pressMouse(vec(ev.button.x, ev.button.y))
-        else: discard
-    of MouseButtonUp:
-      if ev.button.button == BUTTON_LEFT:
-        ui.ctx.releaseMouse(vec(ev.button.x, ev.button.y))
-    else: discard
-    ui.ctx.setMousePos(getMousePos())
+  ui.shared_process_inputs()
 
 proc draw*(view: View, ui: LevelEditorUI, vw, vh: int) =
   ui.ctx.start(view.renderer)
