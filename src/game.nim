@@ -5,7 +5,7 @@ import types, puzzle, assets, tile_objects, consts, rendering
 
 proc new_game*(renderer: RendererPtr): Game =
   new result
-  result.puzzle = newPuzzle()
+  result.puzzle = new_puzzle(5)
   result.planning = true
   result.layer_render_targets = create_layer_render_targets(renderer)
   result.robot = Robot(

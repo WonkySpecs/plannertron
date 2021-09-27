@@ -9,13 +9,12 @@ func tile_content_asset*(obj: TileObject): Asset =
     of Elevator:
       if obj.going_down: ElevatorDownSprite else: ElevatorUpSprite
     else: ArrowSprite
-const test_size = 5
 
-proc new_puzzle*(): Puzzle =
+proc new_puzzle*(grid_size: int): Puzzle =
   new result
   var tiles1 = newSeq[Tile]()
   var tiles2 = newSeq[Tile]()
-  for i in 1..test_size*test_size:
+  for i in 1..grid_size*grid_size:
     tiles1.add Tile(
       bg: textureRegions[TileBg],
       content: none(TileObject))
@@ -23,20 +22,20 @@ proc new_puzzle*(): Puzzle =
       bg: textureRegions[TileBg],
       content: some(TileObject(kind: Elevator, going_down: false)))
   tiles1[0].content = some(TileObject(kind: Elevator, going_down: true))
-  tiles1[test_size*3-1].content = some(TileObject(kind: Arrow, direction: West))
-  tiles1[test_size*3-2].content = some(TileObject(kind: Elevator, going_down: true))
-  tiles1[test_size].content = some(TileObject(kind: Arrow, direction: East))
-  tiles1[test_size+1].content = some(TileObject(kind: Arrow, direction: South))
-  tiles1[test_size*2+1].content = some(TileObject(kind: Elevator, going_down: true))
-  tiles1[test_size*4+1].content = some(TileObject(kind: Elevator, going_down: false))
+  tiles1[grid_size*3-1].content = some(TileObject(kind: Arrow, direction: West))
+  tiles1[grid_size*3-2].content = some(TileObject(kind: Elevator, going_down: true))
+  tiles1[grid_size].content = some(TileObject(kind: Arrow, direction: East))
+  tiles1[grid_size+1].content = some(TileObject(kind: Arrow, direction: South))
+  tiles1[grid_size*2+1].content = some(TileObject(kind: Elevator, going_down: true))
+  tiles1[grid_size*4+1].content = some(TileObject(kind: Elevator, going_down: false))
 
   result.layers = @[
     Layer(
-      size: vec(test_size, test_size),
+      size: vec(grid_size, grid_size),
       tiles: tiles1,
       facing: North),
     Layer(
-      size: vec(test_size, test_size),
+      size: vec(grid_size, grid_size),
       tiles: tiles2,
       facing: North)]
 
