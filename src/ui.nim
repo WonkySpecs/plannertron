@@ -5,7 +5,7 @@ import types, game, consts, rendering
 
 type
   ScreenKind* = enum
-    MainMenu, GameLevel, EditorMenu, LevelEditor
+    MainMenuSK, GameLevelSK, EditorMenuSK, LevelEditorSK
 
   UI = ref object of RootObj
     ctx: Context
@@ -156,7 +156,7 @@ proc draw*(view: View, ui: MainMenuUI, vw, vh: int) =
       bg=some(c(70, 210, 50)),
       hover_bg=some(c(25, 190, 30)),
       active_bg=some(c(10, 150, 0))) == Clicked:
-    ui.next_screen = some(EditorMenu)
+    ui.next_screen = some(EditorMenuSK)
 
   if ui.ctx.doButtonLabel(
       "Useless clicks: " & $useless_clicks,
@@ -185,7 +185,7 @@ proc draw*(view: View, ui: EditorMenuUI, vw, vh: int) =
       bg=some(c(70, 210, 50)),
       hover_bg=some(c(25, 190, 30)),
       active_bg=some(c(10, 150, 0))) == Clicked:
-    ui.next_screen = some(MainMenu)
+    ui.next_screen = some(MainMenuSK)
 
   const
     num_rows = 2
@@ -208,7 +208,7 @@ proc draw*(view: View, ui: EditorMenuUI, vw, vh: int) =
         hover_bg=some(c(25, 190, 30)),
         active_bg=some(c(10, 150, 0))) == Clicked:
       ui.level_size = ls
-      ui.next_screen = some(LevelEditor)
+      ui.next_screen = some(LevelEditorSK)
 
 proc new_level_editor_ui*(renderer: RendererPtr): LevelEditorUI =
   new result

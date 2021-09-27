@@ -32,8 +32,8 @@ proc main =
     view = init_view(renderer, vw, vh)
     screen: Screen = MainMenuScreen(
       ui: new_main_menu_ui(renderer))
-    cur_screen = MainMenu
-    next_screen = some(MainMenu)
+    cur_screen = MainMenuSK
+    next_screen = some(MainMenuSK)
 
   while next_screen.isSome:
     let
@@ -46,15 +46,15 @@ proc main =
 
     if next_screen.isSome and next_screen.get() != cur_screen:
       case next_screen.get():
-      of GameLevel:
+      of GameLevelSK:
         screen = GameLevelScreen(
           ui: new_game_level_ui(renderer),
           game: new_game(renderer))
-      of MainMenu: screen = MainMenuScreen(
+      of MainMenuSK: screen = MainMenuScreen(
         ui: new_main_menu_ui(renderer))
-      of EditorMenu: screen = EditorMenuScreen(
+      of EditorMenuSK: screen = EditorMenuScreen(
         ui: new_editor_menu_ui(renderer))
-      of LevelEditor:
+      of LevelEditorSK:
         screen = new_editor_screen(
           renderer,
           # This is an ugly hack

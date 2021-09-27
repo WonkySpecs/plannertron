@@ -32,7 +32,7 @@ method update*(level: GameLevelScreen, frameMS: int): Option[ScreenKind] =
   if level.ui.quitting:
     none(ScreenKind)
   else:
-    some(GameLevel)
+    some(GameLevelSK)
 
 method draw*(level: GameLevelScreen, view: View, vw, vh: int) =
   let
@@ -48,13 +48,13 @@ method draw*(level: GameLevelScreen, view: View, vw, vh: int) =
 method update*(menu: MainMenuScreen, frameMS: int): Option[ScreenKind] =
   menu.ui.process_inputs()
   if menu.ui.start_level:
-    some(GameLevel)
+    some(GameLevelSK)
   elif menu.ui.quitting:
     none(ScreenKind)
   elif menu.ui.next_screen.isSome:
     menu.ui.next_screen
   else:
-    some(MainMenu)
+    some(MainMenuSK)
 
 method draw*(menu: MainMenuScreen, view: View, vw, vh: int) =
   view.renderer.setDrawColor(r=40, g=0, b=100)
@@ -70,7 +70,7 @@ method update*(menu: EditorMenuScreen, frameMS: int): Option[ScreenKind] =
   elif menu.ui.next_screen.isSome:
     menu.ui.next_screen
   else:
-    some(EditorMenu)
+    some(EditorMenuSK)
 
 method draw*(menu: EditorMenuScreen, view: View, vw, vh: int) =
   view.renderer.setDrawColor(r=40, g=0, b=100)
@@ -91,7 +91,7 @@ method update*(editor: LevelEditorScreen, frameMS: int): Option[ScreenKind] =
   elif editor.ui.next_screen.isSome:
     editor.ui.next_screen
   else:
-    some(LevelEditor)
+    some(LevelEditorSK)
 
 method draw*(editor: LevelEditorScreen, view: View, vw, vh: int) =
   view.renderer.setDrawColor(r=40, g=0, b=100)
