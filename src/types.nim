@@ -76,7 +76,9 @@ func as_rot*(facing: Facing): float =
     of West: 270
 
 func num_layers*(game: Game): int = game.puzzle.layers.len
-func active_layer*(game: Game): Layer = game.puzzle.layers[game.selected_layer_idx]
+func active_layer*(game: Game): Layer =
+  let puzzle = if game.planning: game.puzzle else: game.running_puzzle
+  puzzle.layers[game.selected_layer_idx]
 
 proc rot_left*(layer: Layer) = layer.facing = layer.facing.rot_left()
 proc rot_right*(layer: Layer) = layer.facing = layer.facing.rot_right()
