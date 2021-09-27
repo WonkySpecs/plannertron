@@ -54,6 +54,9 @@ type
     layer_render_targets*: array[min_layer_size..max_layer_size, TexturePtr]
     transitions*: LayerTransitions
 
+  LevelEditor* = ref object
+    game*: Game
+
 func rot_right*(facing: Facing): Facing =
   case facing:
     of North: East
@@ -110,3 +113,6 @@ func tile_at*(layer: Layer, pos: Vec[2]): Tile {.inline} =
 proc failure*(game: Game, msg: string) =
   echo msg
   game.planning = true
+
+func num_layers*(editor: LevelEditor): int =
+  editor.game.num_layers()

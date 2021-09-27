@@ -1,7 +1,7 @@
 import options
 import sdl2
 import ddnimlib / [drawing, utils]
-import types, ui, game
+import types, ui, game, editor
 
 const
   expected_frame_ms = 1000 / 60
@@ -21,7 +21,7 @@ type
 
   LevelEditorScreen* = ref object of Screen
     ui*: LevelEditorUI
-    level_size*: int
+    editor*: LevelEditor
 
 method update*(screen: Screen, frameMS: int): Option[ScreenKind] {.base} = discard
 method draw*(screen: Screen, view: View, vw, vh: int) {.base} = discard
@@ -81,7 +81,7 @@ method draw*(menu: EditorMenuScreen, view: View, vw, vh: int) =
 proc new_editor_screen*(renderer: RendererPtr, level_size: int): LevelEditorScreen =
   LevelEditorScreen(
     ui: new_level_editor_ui(renderer),
-    level_size: level_size)
+    editor: new_level_editor(renderer, level_size))
 
 method update*(editor: LevelEditorScreen, frameMS: int): Option[ScreenKind] =
   editor.ui.process_inputs()
@@ -93,8 +93,8 @@ method update*(editor: LevelEditorScreen, frameMS: int): Option[ScreenKind] =
   else:
     some(LevelEditorSK)
 
-method draw*(editor: LevelEditorScreen, view: View, vw, vh: int) =
+method draw*(screen: LevelEditorScreen, view: View, vw, vh: int) =
   view.renderer.setDrawColor(r=40, g=0, b=100)
   view.renderer.clear()
-  view.draw(editor.ui, vw, vh)
+  view.draw(screen.ui, screen.editor, vw, vh)
   view.renderer.present()

@@ -49,7 +49,7 @@ proc main =
       of GameLevelSK:
         screen = GameLevelScreen(
           ui: new_game_level_ui(renderer),
-          game: new_game(renderer))
+          game: new_game(renderer, 5))
       of MainMenuSK: screen = MainMenuScreen(
         ui: new_main_menu_ui(renderer))
       of EditorMenuSK: screen = EditorMenuScreen(

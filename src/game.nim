@@ -3,9 +3,9 @@ import sdl2
 import ddnimlib / [drawing, utils, linear]
 import types, puzzle, assets, tile_objects, consts, rendering
 
-proc new_game*(renderer: RendererPtr): Game =
+proc new_game*(renderer: RendererPtr, level_size: int): Game =
   new result
-  result.puzzle = new_puzzle(5)
+  result.puzzle = new_puzzle(level_size)
   result.planning = true
   result.layer_render_targets = create_layer_render_targets(renderer)
   result.robot = Robot(
