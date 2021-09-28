@@ -31,16 +31,41 @@ obj_proc(change_floor, Elevator):
   else:
     let
       cur_facing = game.active_layer().facing
-      new_facing = game.puzzle.layers[new_layer_idx].facing
+      new_facing = game.running_puzzle.layers[new_layer_idx].facing
       dfacing = cur_facing - new_facing
     game.selected_layer_idx = new_layer_idx
-    game.robot.pos = game.robot.pos.rotate(dfacing, game.active_layer().size.x.int)
+    game.robot.pos = game.robot.pos.rotate_point(
+      dfacing, game.active_layer().size.x.int)
+    game.robot.movement = game.robot.movement.rotate_movement(dfacing)
 
-proc nothing(game: Game, obj: TileObject) = discard
+obj_proc(press_plate, PressurePlate):
+  echo "press"
+  obj.active = true
+
+obj_proc(release_plate, PressurePlate):
+  echo "release"
+  obj.active = false
+
+proc nothing(game: Game, obj: var TileObject) {.sideEffect.} = discard
 
 const
-  on_arrival_procs* = [
+  on_enter_procs* = [
     Arrow: change_direction,
+    Elevator: nothing,
+    Test: nothing,
+    PressurePlate: press_plate
+  ]
+
+  on_arrival_procs* = [
+    Arrow: nothing,
     Elevator: change_floor,
-    Test: nothing
+    Test: nothing,
+    PressurePlate: nothing
+  ]
+
+  on_exit_procs* = [
+    Arrow: nothing,
+    Elevator: nothing,
+    Test: nothing,
+    PressurePlate: release_plate
   ]

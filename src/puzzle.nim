@@ -8,6 +8,8 @@ func tile_content_asset*(obj: TileObject): Asset =
     of Arrow: ArrowSprite
     of Elevator:
       if obj.going_down: ElevatorDownSprite else: ElevatorUpSprite
+    of PressurePlate:
+      if obj.active: ActivePressurePlateSprite else: PressurePlateSprite
     else: ArrowSprite
 
 proc new_puzzle*(grid_size: int): Puzzle =
@@ -28,6 +30,9 @@ proc new_puzzle*(grid_size: int): Puzzle =
   tiles1[grid_size+1].content = some(TileObject(kind: Arrow, direction: South))
   tiles1[grid_size*2+1].content = some(TileObject(kind: Elevator, going_down: true))
   tiles1[grid_size*4+1].content = some(TileObject(kind: Elevator, going_down: false))
+  tiles1[2].content = some(TileObject(kind: PressurePlate, active: false))
+  tiles1[11].content = some(TileObject(kind: Arrow, direction: South))
+  tiles1[16].content = some(TileObject(kind: Elevator, going_down: true))
 
   result.layers = @[
     Layer(

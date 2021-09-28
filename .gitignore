@@ -1,3 +1,5 @@
 assets/
 plannertron
 *.swp
+tests/*
+!tests/*.nim

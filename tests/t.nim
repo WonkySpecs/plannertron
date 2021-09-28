@@ -23,15 +23,15 @@ suite "test Facing ops":
   test "identity rotation":
     let v = vec(1, 1)
     check:
-      v.rotate(North, 3) == vec(1, 1)
-      v.rotate(East, 3) == vec(1, 1)
-      v.rotate(South, 3) == vec(1, 1)
-      v.rotate(West, 3) == vec(1, 1)
+      v.rotate_point(North, 3) == vec(1, 1)
+      v.rotate_point(East, 3) == vec(1, 1)
+      v.rotate_point(South, 3) == vec(1, 1)
+      v.rotate_point(West, 3) == vec(1, 1)
   
   test "rotation":
     let v = vec(1, 0)
     check:
-      v.rotate(North, 5) == vec(1, 0)
-      v.rotate(East, 5) == vec(4, 1)
-      v.rotate(South, 5) == vec(3, 4)
-      v.rotate(West, 5) == vec(0, 3)
+      v.rotate_point(North, 5) == vec(1, 0)
+      v.rotate_point(East, 5) == vec(4, 1)
+      v.rotate_point(South, 5) == vec(3, 4)
+      v.rotate_point(West, 5) == vec(0, 3)

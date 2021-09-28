@@ -1,7 +1,9 @@
-import options
+import options, strformat
 import sdl2
 import ddnimlib / [drawing, utils, linear]
 import types, puzzle, assets, tile_objects, consts, rendering
+
+const enter_threshold = 0.3
 
 proc new_game*(renderer: RendererPtr, level_size: int): Game =
   new result
@@ -15,7 +17,7 @@ proc go*(game: Game) =
   game.planning = false
   game.running_puzzle = deepCopy(game.puzzle)
   game.selected_layer_idx = 0
-  game.robot.pos = vec(0, 0).rotate(
+  game.robot.pos = vec(0, 0).rotate_point(
     North - game.active_layer().facing,
     game.active_layer().size.x.int)
   game.robot.progress = 0
@@ -38,9 +40,23 @@ proc planning_tick(game: Game, delta: float) =
       game.transitions.progress = 0
 
 proc running_tick(game: Game, delta: float) =
+  echo game.robot.facing
   let old_prog = game.robot.progress
-  game.robot.progress += delta / 40
-  if old_prog < 0.5 and game.robot.progress > 0.5:
+  game.robot.progress += delta / 30
+  if old_prog < enter_threshold and game.robot.progress > enter_threshold:
+    let tile = game.active_layer().tile_at(game.robot.pos)
+    echo fmt"arrived at {tile[]}"
+    if tile.content.isSome:
+      var obj = tile.content.get()
+      on_arrival_procs[obj.kind](game, obj)
+
+  if game.robot.progress > 1:
+    let exiting_tile = game.active_layer().tile_at(game.robot.pos)
+    echo fmt"exiting {exiting_tile[]}"
+    if exiting_tile.content.isSome:
+      var obj = exiting_tile.content.get()
+      on_exit_procs[obj.kind](game, obj)
+
     let
       next_tile = game.robot.pos + game.robot.movement
       layer_size = game.active_layer().size
@@ -48,14 +64,16 @@ proc running_tick(game: Game, delta: float) =
     if next_tile.x < 0 or next_tile.y < 0 or
       next_tile.x >= layer_size.x or next_tile.y >= layer_size.y:
       game.failure("hit a wall")
+      return
 
-  if game.robot.progress > 1:
     game.robot.progress -= 1
     game.robot.pos += game.robot.movement
-    let tile = game.active_layer().tile_at(game.robot.pos)
-    if tile.content.isSome:
-      var obj = tile.content.get()
-      on_arrival_procs[obj.kind](game, obj)
+
+    var entering_tile = game.active_layer().tile_at(game.robot.pos)
+    echo fmt"entering {entering_tile[]}"
+    if entering_tile.content.isSome:
+      var obj = entering_tile.content.get()
+      on_enter_procs[obj.kind](game, obj)
     game.robot.movement = (game.robot.facing - game.active_layer().facing).as_dir()
 
 proc tick*(game: Game, delta: float) =
@@ -74,7 +92,8 @@ proc render_layer*(
   robot = none(Robot)) =
   let
     prev_render_ptr = view.renderer.getRenderTarget()
-    layer = game.puzzle.layers[layerIdx]
+    puzzle = if game.planning: game.puzzle else: game.running_puzzle
+    layer = puzzle.layers[layerIdx]
     size = layer.size.x.int
     render_target = game.layer_render_targets[size]
 

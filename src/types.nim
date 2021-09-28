@@ -5,7 +5,8 @@ import consts
 
 type
   Asset* = enum
-    ArrowSprite, RobotSprite, TileBg, ElevatorUpSprite, ElevatorDownSprite
+    ArrowSprite, RobotSprite, TileBg, ElevatorUpSprite, ElevatorDownSprite,
+    PressurePlateSprite, ActivePressurePlateSprite
 
   Facing* = enum North, East, South, West
 
@@ -17,18 +18,20 @@ type
     progress*: float
 
   TileObjectKind* = enum
-    Arrow, Elevator, Test
+    Arrow, Elevator, Test, PressurePlate
 
-  TileObject* = object 
+  TileObject* = ref object
     case kind*: TileObjectKind
     of Arrow:
       # Facing is relative to the layer
       direction*: Facing
     of Elevator:
       going_down*: bool
+    of PressurePlate:
+      active*: bool
     else: discard
 
-  Tile* = object
+  Tile* = ref object
     bg*: TextureRegion
     content*: Option[TileObject]
 
@@ -92,13 +95,15 @@ func layer_change_dir*(game: Game): int =
 func `+`*(f1, f2: Facing): Facing = ((ord(f1) + ord(f2)) mod 4).Facing
 func `-`*(f1, f2: Facing): Facing = ((ord(f1) - ord(f2) + 4) mod 4).Facing
 
-func rotate*(v: Vec[2], facing: Facing, side_len: int): Vec[2] =
+func rotate_point*(v: Vec[2], facing: Facing, side_len: int): Vec[2] =
   let n = side_len - 1
   case facing:
     of North: v
     of East: vec(n - v.y.int, v.x.int)
     of South: vec(n - v.x.int, n - v.y.int)
     of West: vec(v.y.int, n - v.x.int)
+
+func rotate_movement*(v: Vec[2], facing: Facing): Vec[2] = v.rotate_point(facing, 1)
 
 func as_dir*(facing: Facing): Vec[2] =
   case facing:
