@@ -53,7 +53,7 @@ proc running_tick(game: Game, delta: float) =
     game.robot.pos += game.robot.movement
     let tile = game.active_layer().tile_at(game.robot.pos)
     if tile.content.isSome:
-      let obj = tile.content.get()
+      var obj = tile.content.get()
       on_arrival_procs[obj.kind](game, obj)
     game.robot.movement = (game.robot.facing - game.active_layer().facing).as_dir()
 

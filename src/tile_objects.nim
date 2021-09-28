@@ -14,7 +14,7 @@ macro obj_proc(p_name, obj_type, body: untyped): untyped =
         ident("Game")),
       newIdentDefs(
         ident("obj"),
-        ident("TileObject"))],
+        newNimNode(nnkVarTy).add(ident("TileObject")))],
     body = newStmtList(assert_cmd, body),
     # Have to mark as sideEffect so all procs are the same type
     pragmas = nnkPragma.newTree(ident("sideEffect")))
