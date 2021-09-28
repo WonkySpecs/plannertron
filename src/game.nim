@@ -18,6 +18,7 @@ proc go*(game: Game) =
   game.robot.pos = vec(0, 0).rotate(
     North - game.active_layer().facing,
     game.active_layer().size.x.int)
+  game.robot.progress = 0
   game.robot.facing = South
   game.robot.movement = (game.robot.facing - game.active_layer().facing).as_dir()
 
