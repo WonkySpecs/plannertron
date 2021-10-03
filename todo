@@ -1,4 +1,17 @@
+Immediate
+---
+ - Check how tile_at works - looks like it doesn't account for rotation, but seems to work somehow?
+ - Trigger on_enter When sprite enters tile AKA if progress > some amount (based on sprite size) trigger next tile on_enter
+   - This might be the best way to do hitting the wall
+
+Fixes
+---
  - Fixed timestep
+ - Trigger tiles on floor changes
+   - Elevator loop is failure condition
+
+Features
+---
  - Elevator transitions
  - Level serialization
  - Editor
