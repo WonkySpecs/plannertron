@@ -40,19 +40,16 @@ proc planning_tick(game: Game, delta: float) =
       game.transitions.progress = 0
 
 proc running_tick(game: Game, delta: float) =
-  echo game.robot.facing
   let old_prog = game.robot.progress
   game.robot.progress += delta / 30
   if old_prog < enter_threshold and game.robot.progress > enter_threshold:
     let tile = game.active_layer().tile_at(game.robot.pos)
-    echo fmt"arrived at {tile[]}"
     if tile.content.isSome:
       var obj = tile.content.get()
       on_arrival_procs[obj.kind](game, obj)
 
   if game.robot.progress > 1:
     let exiting_tile = game.active_layer().tile_at(game.robot.pos)
-    echo fmt"exiting {exiting_tile[]}"
     if exiting_tile.content.isSome:
       var obj = exiting_tile.content.get()
       on_exit_procs[obj.kind](game, obj)
@@ -70,7 +67,6 @@ proc running_tick(game: Game, delta: float) =
     game.robot.pos += game.robot.movement
 
     var entering_tile = game.active_layer().tile_at(game.robot.pos)
-    echo fmt"entering {entering_tile[]}"
     if entering_tile.content.isSome:
       var obj = entering_tile.content.get()
       on_enter_procs[obj.kind](game, obj)
